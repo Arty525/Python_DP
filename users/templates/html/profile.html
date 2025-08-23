@@ -1,0 +1,19 @@
+<!--<users/html/profile.html>-->
+{% extends 'html/base.html' %}
+{% block title %}Профиль{% endblock %}
+{% block content %}
+<div class="row align-items-start">
+    <div class="col">
+        <div class="btn-group-vertical" role="group" aria-label="История бронирований">
+            {% for reservation in reservations %}
+            <a href="{% url 'users:reservation_detail' user.pk %}" class="btn btn-outline-secondary">
+                Дата: {{ reservation.date }} Время: {{ reservation.time }} Столик: {{ reservation.table.number }}
+                Гостей: {{ reservation.guests }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col" align="right">
+        {{ user }}
+    </div>
+</div>
+{% endblock %}

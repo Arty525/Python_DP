@@ -23,6 +23,7 @@ class Content(models.Model):
 
 class Table(models.Model):
     '''Модель столика'''
+    HALL_CHOICES = ["Общий зал", "VIP-Зал"]
     number = models.IntegerField()
     status = models.BooleanField(default=True)
     hall = models.CharField(max_length=100)
@@ -48,7 +49,6 @@ class Reservation(models.Model):
     date = models.DateField(auto_now_add=False)
     time = models.TimeField(auto_now_add=False)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
-    #hall = models.CharField(Table.hall)
     celebration = models.BooleanField(default=False)
     guests = models.IntegerField(default=1)
     status = models.CharField(max_length=100, default="Ожидает подтверждения")

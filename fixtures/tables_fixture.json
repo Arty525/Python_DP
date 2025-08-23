@@ -1,0 +1,202 @@
+[
+  {
+    "model": "restaurant.table",
+    "pk": 1,
+    "fields": {
+      "number": 1,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 2,
+    "fields": {
+      "number": 2,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 3,
+    "fields": {
+      "number": 3,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 6
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 4,
+    "fields": {
+      "number": 4,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 5,
+    "fields": {
+      "number": 5,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 6,
+    "fields": {
+      "number": 6,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 6
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 7,
+    "fields": {
+      "number": 7,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 8,
+    "fields": {
+      "number": 8,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 9,
+    "fields": {
+      "number": 9,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 6
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 10,
+    "fields": {
+      "number": 10,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 11,
+    "fields": {
+      "number": 11,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 12,
+    "fields": {
+      "number": 12,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 6
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 13,
+    "fields": {
+      "number": 13,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 14,
+    "fields": {
+      "number": 14,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 15,
+    "fields": {
+      "number": 15,
+      "status": true,
+      "hall": "Общий зал",
+      "seats": 6
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 16,
+    "fields": {
+      "number": 16,
+      "status": true,
+      "hall": "VIP-Зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 17,
+    "fields": {
+      "number": 17,
+      "status": true,
+      "hall": "VIP-Зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 18,
+    "fields": {
+      "number": 18,
+      "status": true,
+      "hall": "VIP-Зал",
+      "seats": 2
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 19,
+    "fields": {
+      "number": 19,
+      "status": true,
+      "hall": "VIP-Зал",
+      "seats": 4
+    }
+  },
+  {
+    "model": "restaurant.table",
+    "pk": 20,
+    "fields": {
+      "number": 20,
+      "status": true,
+      "hall": "VIP-Зал",
+      "seats": 2
+    }
+  }
+]

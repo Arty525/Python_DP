@@ -13,8 +13,8 @@ class ContentAdmin(admin.ModelAdmin):
 
 @admin.register(Table)
 class TableAdmin(admin.ModelAdmin):
-    list_display = ('id', 'number', 'seats', 'status')
-    list_filter = ('status', 'seats')
+    list_display = ('id', 'number', 'hall', 'seats', 'status')
+    list_filter = ('status', 'hall', 'seats')
 
 
 @admin.register(Reservation)

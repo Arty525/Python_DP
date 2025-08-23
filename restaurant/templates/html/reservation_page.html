@@ -1,0 +1,5 @@
+{% extends 'html/base.html' %}
+{% block title %}Бронирование столов{% endblock %}
+{% block content %}
+<iframe src="{% url 'restaurant:free_tables' %}" width="100%" height="250px"></iframe>
+{% endblock %}
