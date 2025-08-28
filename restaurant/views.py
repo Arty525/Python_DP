@@ -2,6 +2,7 @@ from django.views import generic
 from django.views.generic import TemplateView, CreateView, ListView
 from rest_framework.permissions import IsAuthenticated
 
+from restaurant.forms import ReservationForm
 from restaurant.models import Reservation, Table
 
 
@@ -15,8 +16,8 @@ class AboutPageTemplateView(TemplateView):
 
 class ReservationPageTemplateView(CreateView):
     model = Reservation
+    form_class = ReservationForm
     template_name = 'html/reservation_page.html'
-    fields = '__all__'
     permission_classes = (IsAuthenticated,)
 
 

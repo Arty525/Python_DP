@@ -26,9 +26,18 @@
           </li>
         </ul>
       </div>
+      {% if user.is_authenticated %}
       <div class="col" align="right">
         <a href="{% url 'users:profile' user.pk %}" class="btn btn btn-outline-light">Профиль</a>
       </div>
+      {% else %}
+      <div class="col" align="right">
+        <a href="{% url 'users:login' %}" class="btn btn btn-outline-light">Войти</a>
+      </div>
+      <div class="col" align="right">
+        <a href="{% url 'users:register' %}" class="btn btn btn-outline-light">Регистрация</a>
+      </div>
+      {% endif %}
     </div>
   </div>
   <div class="container" style="width: 50vw; background-color: #1a1d20; color: #fff">
