@@ -1,5 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User
 
 
@@ -22,23 +23,27 @@ class CustomUserCreationForm(UserCreationForm):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
 
         self.fields["email"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Email"}
+            {"class": "form-control", "placeholder": "Email", "required": "required"}
         )
         self.fields["first_name"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Имя"}
+            {"class": "form-control", "placeholder": "Имя", "required": "required"}
         )
         self.fields["last_name"].widget.attrs.update(
             {"class": "form-control", "placeholder": "Фамилия"}
         )
         self.fields["phone_number"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "+7"}
+            {"class": "form-control", "placeholder": "+7", "required": "required"}
         )
-        self.fields["password1"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Пароль"}
-        )
-        self.fields["password2"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Повторите пароль"}
-        )
+        self.fields["password1"].widget.attrs.update({
+            "class": "form-control",
+            "placeholder": "Пароль",
+            "required": "required"
+        })
+        self.fields["password2"].widget.attrs.update({
+            "class": "form-control",
+            "placeholder": "Подтверждение пароля",
+            "required": "required"
+        })
 
 
 class CustomUserUpdateForm(forms.ModelForm):
@@ -64,30 +69,38 @@ class CustomUserUpdateForm(forms.ModelForm):
         )
 
 
-class CustomUserLoginForm(forms.Form):
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
+class CustomUserLoginForm(AuthenticationForm):
+    username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
+
+    fields = ["email", "password"]
+
+    labels = {
+        "email": "E-mail",
+        "password": "Пароль",
+    }
+
+    error_messages = {
+        'invalid_login': "Неверный email или пароль. Проверьте правильность введенных данных.",
+        'email_not_verified': "Ваш email не подтвержден. Пожалуйста, проверьте вашу почту.",
+        'banned': "Ваша учетная запись заблокирована."
+    }
 
     def __init__(self, *args, **kwargs):
-        super(forms.ModelForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = "Email"
+        self.fields["password"].label = "Пароль"
 
-        self.fields["email"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Email"}
-        )
-        self.fields["password"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Пароль"}
-        )
 
     def confirm_login_allowed(self, user):
-        super().confirm_login_allowed(user)
         if not user.is_active:
             raise forms.ValidationError(
-                "Ваш email не подтвержден. Пожалуйста, проверьте вашу почту.",
+                self.error_messages['email_not_verified'],
                 code="email_not_verified",
             )
         if user.is_banned:
             raise forms.ValidationError(
-                "Ваша учетная запись заблокирована.",
+                self.error_messages['banned'],
                 code="banned",
             )
 

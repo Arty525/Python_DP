@@ -1,41 +1,60 @@
 import os
 
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.mail import send_mail
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView, FormView
+from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, DeleteView, UpdateView
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.reverse import reverse_lazy
 
 from restaurant.models import Reservation
-from users.forms import PasswordChangeForm, PasswordRecoveryRequestForm
+from users.forms import PasswordChangeForm, PasswordRecoveryRequestForm, CustomUserCreationForm, CustomUserLoginForm
 from users.models import User
 from users.permissions import IsStaff, IsCurrentUser
-from users.serializers import UserSerializer
+#from users.serializers import UserSerializer
 
 
 # Create your views here.
 class LoginUserView(LoginView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
     template_name = "html/login.html"
+    form_class = CustomUserLoginForm
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
 
 
-class CreateUserAPIView(generics.CreateAPIView):
+class CreateUserView(CreateView):
     queryset = User.objects.all()
     template_name = "html/register.html"
-    serializer_class = UserSerializer
+    form_class = CustomUserCreationForm
 
+    def get_success_url(self):
+        return reverse_lazy('users:login')
 
-class ListUserAPIView(generics.ListAPIView):
+    def form_valid(self, form):
+        user = form.save()
+        verification_url = reverse_lazy("users:verify_email", kwargs={"pk": user.pk})
+        absolute_url = self.request.build_absolute_uri(verification_url)
+        email = form.cleaned_data.get("email")
+        send_mail(
+            subject="Регистрация на сайте",
+            message=f"""Здравствуйте!
+    Вы зарегистрировались на сайте.
+    Для подтверждения email перейдите по ссылке:
+    {absolute_url}""",
+            from_email=os.getenv("EMAIL_HOST_USER"),
+            recipient_list=[email],
+        )
+        return super().form_valid(form)
+
+class ListUserView(generics.ListAPIView):
     queryset = User.objects.all()
     template_name = "html/list.html"
-    serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, IsStaff)
 
 
@@ -50,17 +69,15 @@ class ProfileView(LoginRequiredMixin, ListView):
         return Reservation.objects.filter(user=self.request.user)
 
 
-class UpdateUserAPIView(generics.UpdateAPIView):
+class UpdateUserView(UpdateView):
     queryset = User.objects.all()
     template_name = "html/update.html"
-    serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, IsCurrentUser)
 
 
-class DeleteUserAPIView(generics.DestroyAPIView):
+class DeleteUserView(DeleteView):
     queryset = User.objects.all()
     template_name = "html/delete.html"
-    serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, IsCurrentUser)
 
 

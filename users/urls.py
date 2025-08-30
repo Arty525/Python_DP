@@ -1,8 +1,9 @@
 from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from config import settings
-from users.views import ProfileView, CreateUserAPIView, DeleteUserAPIView, UpdateUserAPIView, LoginUserView, \
+from users.views import ProfileView, CreateUserView, DeleteUserView, UpdateUserView, LoginUserView, \
     UserReservationView, CustomLogoutView, VerifyEmailView, SuccessVerifyView, PasswordRecoveryRequestView, \
     PassRecoveryRequsetSuccess, PasswordChangeView, ChangeUserStatus
 
@@ -10,11 +11,11 @@ app_name = 'users'
 
 urlpatterns = [
     path('profile/<int:pk>/', ProfileView.as_view(), name='profile'),
-    path('register/', CreateUserAPIView.as_view(), name='register'),
-    path('delete/', DeleteUserAPIView.as_view(), name='delete'),
-    path('update/', UpdateUserAPIView.as_view(), name='update'),
-    path('login/', LoginUserView.as_view(), name='login'),
-    path("logout/", CustomLogoutView.as_view(next_page="sender:index"), name="logout"),
+    path('register/', CreateUserView.as_view(), name='register'),
+    path('delete/', DeleteUserView.as_view(), name='delete'),
+    path('update/', UpdateUserView.as_view(), name='update'),
+    path('login/', LoginUserView.as_view(next_page="restaurant:home_page"), name='login'),
+    path("logout/", LogoutView.as_view(next_page="restaurant:home_page"), name="logout"),
     path('reservation/<int:pk>', UserReservationView.as_view(), name='reservation_detail'),
     path("verify_email/<int:pk>/", VerifyEmailView.as_view(), name="verify_email"),
     path("success_verify/", SuccessVerifyView.as_view(), name="success_verify"),

@@ -77,6 +77,8 @@ LOGIN_REDIRECT_URL = "restaurant:home_page"
 
 LOGOUT_REDIRECT_URL = "restaurant:home_page"
 
+REGISTRATION_REDIRECT_URL = "restaurant:home_page"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

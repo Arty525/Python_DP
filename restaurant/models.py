@@ -23,17 +23,16 @@ class Content(models.Model):
 
 class Table(models.Model):
     '''Модель столика'''
-    HALL_CHOICES = ["Общий зал", "VIP-Зал"]
-    number = models.IntegerField()
-    status = models.BooleanField(default=True)
-    hall = models.CharField(max_length=100)
+    number = models.IntegerField(unique=True)
     seats = models.IntegerField()
+    hall = models.CharField(max_length=20, choices=(
+        ('main', 'Основной зал'),
+        ('vip', 'VIP зал'),
+    ))
+    status = models.BooleanField(default=True)
 
     def __str__(self):
-        status = "Свободен"
-        if not self.status:
-            status = "Забронирован"
-        return f"Номер: {self.number} | Зал: {self.hall} | Статус: {status} | Число мест: {self.seats}"
+        return f"Стол №{self.number} ({self.seats} мест, {self.get_hall_display()})"
 
     class Meta:
         verbose_name = "Стол"
@@ -43,15 +42,16 @@ class Table(models.Model):
 
 class Reservation(models.Model):
     '''Модель брони столика'''
-    STATUS_CHOICES = ("Ожидает подтверждения", "Активна", "Завершена")
+    STATUS_CHOICES = [("created","Ожидает подтверждения"), ("active", "Активна"), ("completed", "Завершена")]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=False)
     time = models.TimeField(auto_now_add=False)
+    reserve_time = models.IntegerField(default=1)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
     celebration = models.BooleanField(default=False)
     guests = models.IntegerField(default=1)
-    status = models.CharField(max_length=100, default="Ожидает подтверждения")
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default="created")
 
 
     def __str__(self):

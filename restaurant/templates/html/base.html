@@ -30,6 +30,10 @@
       <div class="col" align="right">
         <a href="{% url 'users:profile' user.pk %}" class="btn btn btn-outline-light">Профиль</a>
       </div>
+      <form method="post" action="{% url 'users:logout' %}">
+        {% csrf_token %}
+        <button class="btn btn btn-outline-light" type="submit" >Выход</button>
+      </form>
       {% else %}
       <div class="col" align="right">
         <a href="{% url 'users:login' %}" class="btn btn btn-outline-light">Войти</a>
