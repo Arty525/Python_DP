@@ -1,6 +1,55 @@
 {% extends 'html/base.html' %}
 {% load static %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.ru.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация datepicker
+        $('#{{ form.date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            language: 'ru',
+            todayHighlight: true,
+            autoclose: true,
+            startDate: new Date()
+        });
+
+        // Валидация формы
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Динамическое обновление информации о столе
+        const tableSelect = document.getElementById('id_table');
+        const tableInfo = document.createElement('div');
+        tableInfo.className = 'form-text mt-2';
+        tableInfo.id = 'table-info';
+        tableSelect.parentNode.appendChild(tableInfo);
+
+        function updateTableInfo() {
+            const selectedOption = tableSelect.options[tableSelect.selectedIndex];
+            const seats = selectedOption.getAttribute('data-seats');
+            const hall = selectedOption.getAttribute('data-hall');
+            if (seats && hall) {
+                tableInfo.innerHTML = `<i class="bi bi-info-circle"></i> Вместимость: ${seats} человек, Зал: ${hall}`;
+            } else {
+                tableInfo.innerHTML = '';
+            }
+        }
+
+        tableSelect.addEventListener('change', updateTableInfo);
+        updateTableInfo(); // initial update
+    });
+</script>
+{% endblock %}
+
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
@@ -40,8 +89,6 @@
 
 {% block content %}
 
-
-
 <!-- Отображение общих ошибок формы -->
 {% if form.non_field_errors %}
 <div class="alert alert-danger">
@@ -55,17 +102,16 @@
     {% csrf_token %}
 
     <!-- Поле даты с календарем -->
-
-<input type="date" class="form-control" id="date" name="date" placeholder="Дата" required>
+    <input type="date" class="form-control" id="date" name="date" placeholder="Дата" required>
 
     <!-- Поле времени - группа кнопок -->
     <div class="mb-4">
         <label class="form-label fw-bold required-field">
-            {{ form.time.label }}
+            {{ form.start_time.label }}
         </label>
         <div class="btn-group flex-wrap" role="group">
-            {% for choice in form.time %}
-            <input type="radio" class="btn-check" name="{{ form.time.name }}"
+            {% for choice in form.start_time %}
+            <input type="radio" class="btn-check" name="start_time"
                    id="{{ choice.id_for_label }}" value="{{ choice.data.value }}"
                    autocomplete="off" {% if choice.data.selected %}checked{% endif %}>
             <label class="btn btn-outline-light" for="{{ choice.id_for_label }}">
@@ -73,15 +119,65 @@
             </label>
             {% endfor %}
         </div>
-        {% if form.time.errors %}
+        {% if form.start_time.errors %}
         <div class="error-list">
-            {% for error in form.time.errors %}
+            {% for error in form.start_time.errors %}
             {{ error }}
             {% endfor %}
         </div>
         {% endif %}
         <div class="form-text">Выберите время посещения</div>
     </div>
+
+    <!-- Поле продолжительности - группа кнопок -->
+
+    <div class="mb-4">
+        <label class="form-label fw-bold required-field">
+            {{ form.duration.label }}
+        </label>
+        <div class="btn-group flex-wrap" role="group">
+            {% for choice in form.duration %}
+            <input type="radio" class="btn-check" name="duration"
+                   id="{{ choice.id_for_label }}" value="{{ choice.data.value }}"
+                   autocomplete="off" {% if choice.data.selected %}checked{% endif %}>
+            <label class="btn btn-outline-light" for="{{ choice.id_for_label }}">
+                {{ choice.choice_label }}
+            </label>
+            {% endfor %}
+        </div>
+        {% if form.duration.errors %}
+        <div class="error-list">
+            {% for error in form.duration.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-text">Выберите продолжительность бронирования</div>
+    </div>
+
+
+    <button type="button" class="btn btn-primary" onclick="refreshIframeWithData()">
+        <i class="bi bi-arrow-clockwise me-2"></i>
+        Показать доступные столы
+    </button>
+    <!-- Фрейм для обновления -->
+    <iframe id="tablesIframe" width="100%" height="300px" src="{% url 'restaurant:free_tables' %}"></iframe>
+    <script>
+        function refreshIframeWithData() {
+            const date = document.getElementById('date').value;
+            const start_time = document.querySelector('input[name="start_time"]:checked')?.value;
+            const duration = document.querySelector('input[name="duration"]:checked')?.value;
+            const iframe = document.getElementById('tablesIframe');
+
+            if (!date || !start_time) {
+                alert('Пожалуйста, выберите дату и время');
+                return;
+            }
+
+            // Обновляем iframe с параметрами
+            iframe.src = "{% url 'restaurant:free_tables' %}?date=" + date + "&start_time=" + start_time + "&duration=" + duration;
+        }
+    </script>
 
     <!-- Поле выбора стола - выпадающий список -->
     <div class="mb-4">
@@ -162,53 +258,4 @@
         </button>
     </div>
 </form>
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.ru.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Инициализация datepicker
-        $('#{{ form.date.id_for_label }}').datepicker({
-            format: 'yyyy-mm-dd',
-            language: 'ru',
-            todayHighlight: true,
-            autoclose: true,
-            startDate: new Date()
-        });
-
-        // Валидация формы
-        const form = document.querySelector('.needs-validation');
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
-
-        // Динамическое обновление информации о столе
-        const tableSelect = document.getElementById('id_table');
-        const tableInfo = document.createElement('div');
-        tableInfo.className = 'form-text mt-2';
-        tableInfo.id = 'table-info';
-        tableSelect.parentNode.appendChild(tableInfo);
-
-        function updateTableInfo() {
-            const selectedOption = tableSelect.options[tableSelect.selectedIndex];
-            const seats = selectedOption.getAttribute('data-seats');
-            const hall = selectedOption.getAttribute('data-hall');
-            if (seats && hall) {
-                tableInfo.innerHTML = `<i class="bi bi-info-circle"></i> Вместимость: ${seats} человек, Зал: ${hall}`;
-            } else {
-                tableInfo.innerHTML = '';
-            }
-        }
-
-        tableSelect.addEventListener('change', updateTableInfo);
-        updateTableInfo(); // initial update
-    });
-</script>
 {% endblock %}

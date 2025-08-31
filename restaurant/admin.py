@@ -19,6 +19,6 @@ class TableAdmin(admin.ModelAdmin):
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'date', 'time', 'reserve_time', 'table', 'status', 'guests', 'celebration')
-    list_filter = ('user', 'date', 'time', 'reserve_time', 'table', 'status', 'guests', 'celebration')
+    list_display = ('id', 'user', 'date', 'start_time', 'duration', 'end_time', 'table', 'status', 'guests', 'celebration')
+    list_filter = ('user', 'date', 'start_time', 'duration','end_time', 'table', 'status', 'guests', 'celebration')
     search_fields = ('user',)

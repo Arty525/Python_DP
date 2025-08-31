@@ -23,18 +23,33 @@ class ReservationForm(forms.ModelForm):
         ('22:00', '22:00'),
     ]
 
-    time = forms.ChoiceField(
+    DURATION_CHOICES = [
+        (1, '1 час'),
+        (2, '2 часа'),
+        (3, '3 часа'),
+        (4, '4 часа'),
+        (5, '5 часов'),
+    ]
+
+    start_time = forms.ChoiceField(
         choices=TIME_CHOICES,
         widget=forms.RadioSelect,
         label="Время"
     )
 
+    duration = forms.ChoiceField(
+        choices=DURATION_CHOICES,
+        widget=forms.RadioSelect,
+        label="Продолжительность бронирования"
+    )
+
     class Meta:
         model = Reservation
-        fields = ["date", "time", "table", "guests", "celebration"]
+        fields = ["date", "start_time", "duration", "table", "guests", "celebration"]
         labels = {
             "date": "Дата",
-            "time": "Время",
+            "start_time": "Время",
+            "duration": "Продолжительность бронирования",
             "table": "Стол",
             "guests": "Количество гостей",
             "celebration": "Праздник"
@@ -63,12 +78,13 @@ class ReservationForm(forms.ModelForm):
         self.fields['date'].initial = timezone.now().date()
 
         # Для radio кнопок времени
-        self.fields['time'].widget.attrs = {'class': 'btn-check'}
+        self.fields['start_time'].widget.attrs = {'class': 'btn-check'}
+        self.fields['duration'].widget.attrs = {'class': 'btn-check'}
 
     def clean(self):
         cleaned_data = super(ReservationForm, self).clean()
         date = cleaned_data.get("date")  # Исправлено: cleaned_data вместо self.cleaned_data
-        time = datetime.strptime(cleaned_data.get("time"), '%H:%M').time()
+        time = datetime.strptime(cleaned_data.get("start_time"), '%H:%M').time()
         guests = cleaned_data.get("guests")
         table = cleaned_data.get("table")
         now_date = timezone.localtime(timezone.now()).date()
@@ -81,7 +97,7 @@ class ReservationForm(forms.ModelForm):
             # Комбинируем дату и время
             combined_datetime = datetime.combine(dummy_date, time)
             # Прибавляем часы
-            reserve_time = combined_datetime + timedelta(hours=table_reservation.reserve_time)
+            reserve_time = combined_datetime + timedelta(hours=table_reservation.duration)
             if date and time and date == now_date and time <= reserve_time.time():
                 raise ValidationError("Столик на это время уже занят")
         except Reservation.DoesNotExist:

@@ -1,4 +1,7 @@
+from datetime import timedelta, datetime
+
 from django.db import models
+from django.utils import timezone
 
 from users.models import User
 
@@ -46,8 +49,27 @@ class Reservation(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=False)
-    time = models.TimeField(auto_now_add=False)
-    reserve_time = models.IntegerField(default=1)
+    start_time = models.TimeField(auto_now_add=False, null=True, blank=True)
+    duration = models.IntegerField(default=1)
+    end_time = models.TimeField(editable=False, null=True, blank=True)  # вычисляемое поле
+
+    def get_end_time(self):
+        """Возвращает время окончания"""
+        if self.start_time and self.duration:
+            # Создаем фиктивную дату и добавляем часы
+            dummy_datetime = datetime.combine(datetime.today(), self.start_time)
+            end_datetime = dummy_datetime + timedelta(hours=self.duration)
+            return end_datetime.time()
+        return None
+
+    def save(self, *args, **kwargs):
+        # Вычисляем время окончания перед сохранением
+        if self.start_time and self.duration:
+            dummy_datetime = datetime.combine(datetime.today(), self.start_time)
+            end_datetime = dummy_datetime + timedelta(hours=self.duration)
+            self.end_time = end_datetime.time()
+        super().save(*args, **kwargs)
+
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
     celebration = models.BooleanField(default=False)
     guests = models.IntegerField(default=1)
