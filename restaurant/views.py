@@ -59,6 +59,18 @@ class ReservationPageCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+
+class ReservationListView(LoginRequiredMixin, ListView):
+    model = Reservation
+    template_name = 'html/reservation_list.html'
+    login_url = reverse_lazy("users:login")
+    context_object_name = 'reservations'
+
+    def get_queryset(self):
+        context_data = Reservation.objects.all()
+        return context_data
+
+
 class ReservationDetailView(LoginRequiredMixin, DetailView):
     model = Reservation
     template_name = 'html/reservation_detail.html'
@@ -91,7 +103,7 @@ class ReservationCancelView(LoginRequiredMixin, View):
     permission_required = (IsAuthenticated,)
     def post(self, request, pk):
         reservation = get_object_or_404(Reservation, id=pk)
-        if request.user == reservation.user:
+        if request.user == reservation.user or request.user.is_staff:
             reservation.status = 'cancelled'
             reservation.save()
             return redirect(reverse_lazy("restaurant:reservation_detail", kwargs={'pk': pk}))
