@@ -1,5 +1,11 @@
 {% extends 'html/base.html' %}
-{% block title %}Бронь на {{reservation.date }} {{reservation.time }}{% endblock %}
+{% block title %}Бронь на {{reservation.date|date:"j.n.Y" }} {{ reservation.start_time|time:"H:i" }} - {{ reservation.end_time|time:"H:i" }}{% endblock %}
 {% block content %}
 {{ reservation }}
+<a href="{% url 'restaurant:reservation_update' reservation.pk %}" class="btn btn-primary">Изменить</a>
+<a href="{% url 'restaurant:reservation_delete' reservation.pk %}" class="btn btn-danger">Удалить</a>
+<form method="post" action="{% url 'restaurant:reservation_cancel' reservation.pk %}" style="padding-top: 10px">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Отменить</button>
+</form>
 {% endblock %}

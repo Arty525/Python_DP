@@ -45,7 +45,7 @@ class Table(models.Model):
 
 class Reservation(models.Model):
     '''Модель брони столика'''
-    STATUS_CHOICES = [("created","Ожидает подтверждения"), ("active", "Активна"), ("completed", "Завершена")]
+    STATUS_CHOICES = [("created","Ожидает подтверждения"), ("active", "Активна"), ("completed", "Завершена"), ("cancelled", "Отменена"),]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=False)
