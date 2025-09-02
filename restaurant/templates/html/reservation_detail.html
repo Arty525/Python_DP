@@ -8,4 +8,8 @@
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Отменить</button>
 </form>
+<form method="post" action="{% url 'restaurant:reservation_confirm' reservation.pk %}" style="padding-top: 10px">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">Подтвердить</button>
+</form>
 {% endblock %}

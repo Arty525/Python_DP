@@ -4,30 +4,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Менеджер рассылок{% endblock %}</title>
-  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
   {% load static %}
+  <title>Carnivore - {% block title %}{% endblock %}</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+
   <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
 </head>
 <body style="background-color: #000; margin: 0 0 0 0">
+{% block menu %}
 <div align="center">
-  <div style="width: 50vw;">
+  <div style="max-width:1000px">
     <div class="row align-items-start">
       <div class="col-lg-9">
-        <ul class="nav nav-underline">
+        <ul class="nav nav-underline" style="--bs-link-color: #a3a3a3; --bs-nav-link-hover-color: #ffffff; font-family:Tahoma;>
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{% url 'restaurant:home_page' %}">Главная</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'restaurant:about_page' %}">О нас</a>
           </li>
+          {% if not user.is_staff or user.is_superuser %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'restaurant:reservation_page' %}">Бронирование столов</a>
           </li>
+          {% endif %}
           {% if user.is_authenticated %}
           {% if user.is_staff or user.is_superuser %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'restaurant:reservations_list' %}">Список бронирований</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'restaurant:content_management' %}">Управление контентом</a>
           </li>
           {% endif %}
           {% endif %}
@@ -69,7 +76,12 @@
       {% endif %}
     </div>
   </div>
-  <div class="container" style="width: 50vw; background-color: #1a1d20; color: #fff">
+  {% endblock %}
+
+  {% block header %}
+  {% endblock %}
+
+  <div class="container" style="max-width: 1000px; background-color: #1a1d20; color: #fff">
     {% block content %}
     Content
     {% endblock %}

@@ -1,0 +1,11 @@
+<!--<html/index.html>-->
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Редактирование описания{% endblock %}
+{% block content %}
+<a href="{% url 'restaurant:carousel_create' %}">Управление каруселью</a>
+<br>
+<a href="{% url 'restaurant:description_create' %}">Управление описанием</a>
+<br>
+<a href="{% url 'restaurant:contacts_create' %}">Управление контактами</a>
+{% endblock %}

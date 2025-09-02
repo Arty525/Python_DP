@@ -1,6 +1,35 @@
-<!--<html/index.html>-->
 {% extends 'html/base.html' %}
-{% block title %}Главная{% endblock %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+{% block header %}
+{% if slides %}
+<div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel" style="max-width:1000px">
+  <div class="carousel-inner">
+    {% for slide in slides %}
+    <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
+      {% if slide.image and slide.image.url %}
+      <img src="{{ slide.image.url }}" class="d-block w-100" alt="{{ slide.title }}">
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
 {% block content %}
-MAIN PAGE
+{{ restaurant_description.title }}
+<br>
+{{ restaurant_description.text }}
+<hr>
+Услуги
+<br>
+{% for service in services %}
+<p>{{ service }}</p>
+{% endfor %}
+<hr>
+Контакты
+<br>
+{% for contact in contacts %}
+<p>{{ contact }}</p>
+{% endfor %}
 {% endblock %}

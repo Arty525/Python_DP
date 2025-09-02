@@ -1,15 +1,79 @@
+import os
 from datetime import timedelta, datetime
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils import timezone
 
-from .models import Reservation, Table
+from .models import Reservation, Table, Content, Contacts
+
+
+class ReservationSearchForm(forms.Form):
+
+    START_TIME_CHOICES = [
+        ('12:00', '12:00'),
+        ('13:00', '13:00'),
+        ('14:00', '14:00'),
+        ('15:00', '15:00'),
+        ('16:00', '16:00'),
+        ('17:00', '17:00'),
+        ('18:00', '18:00'),
+        ('19:00', '19:00'),
+        ('20:00', '20:00'),
+        ('21:00', '21:00'),
+        ('22:00', '22:00'),
+    ]
+
+    start_time = forms.ChoiceField(
+        choices=START_TIME_CHOICES,
+        widget=forms.RadioSelect,
+        label="Время",
+        required=False
+    )
+
+    class Meta:
+        fields = ["date", "start_time", "first_name", "last_name", "table", "guests", "celebration"]
+        labels = {
+            "date": "Дата",
+            "start_time": "Время",
+            "first_name": "Имя",
+            "last_name": "Фамилия",
+            "table": "Стол",
+            "guests": "Количество гостей",
+            "celebration": "Праздник"
+        }
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'text', 'class': 'form-control datepicker'}),
+            'first_name': forms.TextInput(attrs={'type': 'text', 'class': 'form-control textinput'}),
+            'last_name': forms.TextInput(attrs={'type': 'text', 'class': 'form-control textinput'}),
+            'table': forms.Select(attrs={'class': 'form-select'}),
+            'guests': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 20}),
+            'celebration': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    # def __init__(self, *args, **kwargs):
+    #     super(ReservationSearchForm, self).__init__(*args, **kwargs)
+    #
+    #     self.fields['table'].queryset = Table.objects.all()
+    #     self.fields['table'].empty_label = "Выберите стол"
+    #
+    #     # Устанавливаем атрибуты для options столов
+    #     self.fields['table'].widget.attrs.update({
+    #         'class': 'form-select',
+    #         'data-live-search': 'true'
+    #     })
+    #
+    #     # Устанавливаем начальную дату (сегодня)
+    #     self.fields['date'].initial = timezone.now().date()
+    #
+    #     # Для radio кнопок времени
+    #     self.fields['time'].widget.attrs = {'class': 'btn-check'}
 
 
 class ReservationForm(forms.ModelForm):
     # Кастомные choices для времени
-    TIME_CHOICES = [
+    START_TIME_CHOICES = [
         ('12:00', '12:00'),
         ('13:00', '13:00'),
         ('14:00', '14:00'),
@@ -32,7 +96,7 @@ class ReservationForm(forms.ModelForm):
     ]
 
     start_time = forms.ChoiceField(
-        choices=TIME_CHOICES,
+        choices=START_TIME_CHOICES,
         widget=forms.RadioSelect,
         label="Время"
     )
@@ -83,7 +147,7 @@ class ReservationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(ReservationForm, self).clean()
-        date = cleaned_data.get("date")  # Исправлено: cleaned_data вместо self.cleaned_data
+        date = cleaned_data.get("date")
         time = datetime.strptime(cleaned_data.get("start_time"), '%H:%M').time()
         guests = cleaned_data.get("guests")
         table = cleaned_data.get("table")
@@ -91,15 +155,16 @@ class ReservationForm(forms.ModelForm):
         now_time = timezone.localtime(timezone.now()).time()
 
         try:
-            table_reservation = Reservation.objects.get(date=date, table=table)
-                    # Создаем фиктивную дату
-            dummy_date = timezone.now().date()
-            # Комбинируем дату и время
-            combined_datetime = datetime.combine(dummy_date, time)
-            # Прибавляем часы
-            reserve_time = combined_datetime + timedelta(hours=table_reservation.duration)
-            if date and time and date == now_date and time <= reserve_time.time():
-                raise ValidationError("Столик на это время уже занят")
+            table_reservation = Reservation.objects.filter(date=date, table=table, status__in=['active', 'created'])
+            if table_reservation.exists():
+                # Создаем фиктивную дату
+                dummy_date = timezone.now().date()
+                # Комбинируем дату и время
+                combined_datetime = datetime.combine(dummy_date, time)
+                # Прибавляем часы
+                reserve_time = combined_datetime + timedelta(hours=table_reservation.duration)
+                if date and time and date == now_date and time <= reserve_time.time():
+                    raise ValidationError("Столик на это время уже занят")
         except Reservation.DoesNotExist:
             pass
 
@@ -129,3 +194,90 @@ class ReservationForm(forms.ModelForm):
 
 
         return cleaned_data
+
+
+class CarouselUploadForm(forms.ModelForm):
+    content_type = forms.CharField(initial='carousel', widget=forms.HiddenInput())
+    class Meta:
+        model = Content
+        fields = ['content_type', 'title', 'image', 'is_active']
+        required = ['image', 'title']
+        labels = {
+            "title": "Название",
+            "image": "Изображение",
+            "is_active": "Показ изображения"
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image', False)
+        if image is None:
+            raise ValidationError('Загрузите изображение')
+
+        valid_extensions = ['.jpg', '.jpeg', '.png']
+        extension = os.path.splitext(image.name)[1].lower()
+        if extension not in valid_extensions:
+            raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+        max_size = 5 * 1024 * 1024
+        if image.size > max_size:
+            raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб')
+        return image
+
+
+class RestaurantDescriptionForm(forms.ModelForm):
+    content_type = forms.CharField(initial='description', widget=forms.HiddenInput())
+    class Meta:
+        model = Content
+        fields = ['content_type', 'title', 'text', 'image', 'is_active']
+        required = ['text', 'image', 'title']
+        labels = {
+            "text": "Текст",
+            "title": "Название",
+            "image": "Изображение",
+            "is_active": "Показ описания"
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'text': forms.Textarea(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image', False)
+        if image is not None:
+            valid_extensions = ['.jpg', '.jpeg', '.png']
+            extension = os.path.splitext(image.name)[1].lower()
+            if extension not in valid_extensions:
+                raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+            max_size = 5 * 1024 * 1024
+            if image.size > max_size:
+                raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб')
+            return image
+
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = Contacts
+        fields = ['mobile_phone_number', 'phone_number', 'email', 'city', 'address', 'subway']
+        required = ['mobile_phone_number', 'phone_number', 'email', 'city', 'address']
+        labels = {
+            'mobile_phone_number': 'Мобильный телефон',
+            'phone_number': 'Телефон',
+            'email': 'Email',
+            'city': 'Город',
+            'address': 'Адрес',
+            'subway': 'Станция метро'
+        }
+        widgets = {
+            'mobile_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'subway': forms.TextInput(attrs={'class': 'form-control'}),
+        }

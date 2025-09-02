@@ -201,9 +201,9 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_BEAT_SCHEDULE = {
-    'check_last_login': {
-        'task': 'users.tasks.check_last_login',
-        'schedule': timedelta(minutes=1),
+    'change_reservation_status': {
+        'task': 'restaurant.tasks.change_reservation_status',
+        'schedule': timedelta(minutes=5),
     },
 }
 
