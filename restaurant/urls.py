@@ -31,7 +31,7 @@ urlpatterns = [
     path('content/carousel/update/<int:pk>', CarouselContentUpdateView.as_view(), name='carousel_update'),
     path('content/carousel/list/', CarouselContentListView.as_view(), name='carousel_list'),
     path('content/carousel/delete/<int:pk>', CarouselContentDeleteView.as_view(), name='carousel_delete'),
-
+###VVV###
     path('content/restaurant_description/create/', DescriptionCreateView.as_view(), name='description_create'),
     path('content/restaurant_description/update/<int:pk>', DescriptionUpdateView.as_view(), name='description_update'),
     path('content/restaurant_description/delete/<int:pk>', DescriptionDeleteView.as_view(), name='description_delete'),

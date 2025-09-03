@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import Permission
 
 from restaurant.models import Content, Table, Reservation, Contacts, Team, Service, Feedback, Chief, SousChef
 
@@ -59,3 +60,10 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('id', 'first_name', 'last_name', 'email', 'phone', 'datetime', 'status')
     list_filter = ('first_name', 'last_name', 'email', 'phone', 'status')
     search_fields = ('first_name', 'last_name', 'email', 'phone', 'text')
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'codename')
+    list_filter = ('codename',)
+    search_fields = ('codename',)

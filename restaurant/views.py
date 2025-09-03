@@ -402,6 +402,7 @@ class DescriptionCreateView(LoginRequiredMixin, CreateView):
     template_name = 'html/description_form.html'
     form_class = RestaurantDescriptionForm
     login_url = reverse_lazy("users:login")
+    permission_classes = (IsAuthenticated, IsStaff,)
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
