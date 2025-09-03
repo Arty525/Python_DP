@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
@@ -12,27 +13,186 @@ from drf_yasg.openapi import Contact
 from rest_framework.permissions import IsAuthenticated
 
 from restaurant.forms import ReservationForm, ReservationSearchForm, CarouselUploadForm, RestaurantDescriptionForm, \
-    ContactForm
-from restaurant.models import Reservation, Table, Content, Contacts
+    ContactForm, TeamForm, RestaurantHistoryForm, RestaurantMissionForm, ServiceForm, FeedbackForm, ChiefForm, \
+    SousChefForm
+from restaurant.models import Reservation, Table, Content, Contacts, Team, Service, Feedback, SousChef, Chief
 from users.permissions import IsCurrentUser
 
 
 #from restaurant.serializers import ReservationSerializer
 
 
-class HomePageTemplateView(TemplateView):
+class HomePageCreateView(CreateView):
     template_name = 'html/index.html'
+    form_class = FeedbackForm
+
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['slides'] = Content.objects.filter(content_type='carousel', is_active=True)
-        context['restaurant_description'] = Content.objects.get(content_type='description', is_active=True)
-        context['services'] = Content.objects.filter(content_type='services', is_active=True)
-        context['contacts'] = Contacts.objects.all()
+        try:
+            context['slides'] = Content.objects.filter(content_type='carousel', is_active=True)
+        except ObjectDoesNotExist:
+            context['slides'] = None
+        try:
+            context['restaurant_description'] = Content.objects.get(content_type='description', is_active=True)
+        except ObjectDoesNotExist:
+            context['restaurant_description'] = None
+        try:
+            context['services'] = Service.objects.filter(is_active=True)
+        except ObjectDoesNotExist:
+            context['services'] = None
+        try:
+            context['contacts'] = Contacts.objects.latest('id')
+        except ObjectDoesNotExist:
+            context['contacts'] = None
         return context
+
+
+class FeedbackListView(ListView):
+    model = Feedback
+    template_name = 'html/feedback_list.html'
+    context_object_name = 'feedback_list'
 
 
 class AboutPageTemplateView(TemplateView):
     template_name = 'html/about.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context['chief'] = Chief.objects.latest('id')
+        except ObjectDoesNotExist:
+            context['chief'] = None
+        try:
+            context['sous_chef'] = SousChef.objects.latest('id')
+        except ObjectDoesNotExist:
+            context['sous_chef'] = None
+        try:
+            context['team'] = Team.objects.latest('id')
+        except ObjectDoesNotExist:
+            context['team'] = None
+        try:
+            context['history'] = Content.objects.filter(content_type='history', is_active=True).latest('id')
+        except ObjectDoesNotExist:
+            context['history'] = None
+        try:
+            context['mission'] = Content.objects.filter(content_type='mission', is_active=True).latest('id')
+        except ObjectDoesNotExist:
+            context['mission'] = None
+        return context
+
+
+class ServiceCreateView(LoginRequiredMixin, CreateView):
+    model = Service
+    template_name = 'html/service_form.html'
+    form_class = ServiceForm
+
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
+
+
+class ServiceListView(ListView):
+    model = Service
+    template_name = 'html/service_list.html'
+    context_object_name = 'services'
+
+
+class ServiceDetailView(DetailView):
+    model = Service
+    template_name = 'html/service_detail.html'
+    context_object_name = 'service'
+
+class ServiceUpdateView(LoginRequiredMixin, UpdateView):
+    model = Service
+    template_name = 'html/service_form.html'
+    form_class = ServiceForm
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
+
+
+class ServiceDeleteView(LoginRequiredMixin, DeleteView):
+    model = Service
+    template_name = 'html/service_delete.html'
+    success_url = reverse_lazy('restaurant:home_page')
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
+
+
+class HistoryCreateView(LoginRequiredMixin, CreateView):
+    model = Content
+    template_name = 'html/history_form.html'
+    form_class = RestaurantHistoryForm
+
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
+
+
+class HistoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Content
+    template_name = 'html/history_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('restaurant:about_page')
+
+
+class HistoryUpdateView(LoginRequiredMixin, UpdateView):
+    model = Content
+    template_name = 'html/history_form.html'
+    form_class = RestaurantHistoryForm
+    def get_success_url(self):
+        return reverse_lazy('restaurant:about_page')
+
+
+class MissionCreateView(LoginRequiredMixin, CreateView):
+    model = Content
+    template_name = 'html/mission_form.html'
+    form_class = RestaurantMissionForm
+
+    def get_success_url(self):
+        return reverse_lazy('restaurant:home_page')
+
+
+class MissionDeleteView(LoginRequiredMixin, DeleteView):
+    model = Content
+    template_name = 'html/mission_delete.html'
+    def get_success_url(self):
+        return reverse_lazy('restaurant:about_page')
+
+
+class MissionUpdateView(LoginRequiredMixin, UpdateView):
+    model = Content
+    template_name = 'html/mission_form.html'
+    form_class = RestaurantMissionForm
+    def get_success_url(self):
+        return reverse_lazy('restaurant:about_page')
+
+
+class TeamCreateView(CreateView):
+    model = Team
+    template_name = 'html/team_form.html'
+    form_class = TeamForm
+
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
+class ChiefCreateView(CreateView):
+    model = Chief
+    template_name = 'html/chief_form.html'
+    form_class = ChiefForm
+
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
+class SousChefCreateView(CreateView):
+    model = SousChef
+    template_name = 'html/sous_chef_form.html'
+    form_class = SousChefForm
+
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
 
 
 class ReservationPageCreateView(LoginRequiredMixin, CreateView):
@@ -170,6 +330,5 @@ class ContactsCreateView(LoginRequiredMixin, CreateView):
 #             reservation.save()
 #             return redirect(reverse_lazy("restaurant:reservation_detail", kwargs={'pk': pk}))
 #         return HttpResponseForbidden("У вас нет прав для отключения этой рассылки")
-
 
 

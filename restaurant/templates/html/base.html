@@ -10,39 +10,28 @@
 
   <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
 </head>
-<body style="background-color: #000; margin: 0 0 0 0">
+<body style="background-color: #000; margin: 0 0 0 0; min-width:100vw; height:100vh;">
 {% block menu %}
 <div align="center">
-  <div style="max-width:1000px">
+  <div style="max-width:1000px;">
     <div class="row align-items-start">
-      <div class="col-lg-9">
+      <div class="col-lg-7" style="max-width:50%">
         <ul class="nav nav-underline" style="--bs-link-color: #a3a3a3; --bs-nav-link-hover-color: #ffffff; font-family:Tahoma;>
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{% url 'restaurant:home_page' %}">Главная</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'restaurant:about_page' %}">О нас</a>
-          </li>
-          {% if not user.is_staff or user.is_superuser %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'restaurant:reservation_page' %}">Бронирование столов</a>
-          </li>
-          {% endif %}
-          {% if user.is_authenticated %}
-          {% if user.is_staff or user.is_superuser %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'restaurant:reservations_list' %}">Список бронирований</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'restaurant:content_management' %}">Управление контентом</a>
-          </li>
-          {% endif %}
-          {% endif %}
+        <a class="nav-link" aria-current="page" href="{% url 'restaurant:home_page' %}">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'restaurant:about_page' %}">О нас</a>
+        </li>
+        {% if not user.is_staff or user.is_superuser %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'restaurant:reservation_page' %}">Бронирование столов</a>
+        </li>
+        {% endif %}
         </ul>
       </div>
-
       {% if user.is_authenticated %}
-      <div class="col-3" align="right">
+      <div class="col-5" style="min-width:50%" align="right">
         <form method="post" action="{% url 'users:logout' %}">
           {% csrf_token %}
           <div class="btn-group">
@@ -64,13 +53,21 @@
                 Выйти</button></li>
             </ul>
           </div>
-        </form>
+          {% if user.is_staff or user.is_superuser %}
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Администрирование
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'restaurant:reservations_list' %}">Список бронирований</a></li>
+            <li><a class="dropdown-item" href="{% url 'restaurant:content_management' %}">Управление контентом</a></li>
+            <li><a class="dropdown-item" href="{% url 'restaurant:feedback_list' %}">Просмотр обратной связи</a></li>
+          </ul>
       </div>
+      {% endif %}
+      </form>
       {% else %}
-      <div class="col-lg-auto" align="right">
+      <div class="col-5" style="min-width:50%" align="right">
         <a href="{% url 'users:login' %}" class="btn btn btn-outline-light">Войти</a>
-      </div>
-      <div class="col" align="right">
         <a href="{% url 'users:register' %}" class="btn btn btn-outline-light">Регистрация</a>
       </div>
       {% endif %}
@@ -81,11 +78,34 @@
   {% block header %}
   {% endblock %}
 
-  <div class="container" style="max-width: 1000px; background-color: #1a1d20; color: #fff">
+  <div class="container" style="max-width: 1000px; background-color: #1a1d20; color: #fff; padding-top: 15px; padding-bottom: 15px;">
     {% block content %}
     Content
     {% endblock %}
   </div>
+  {% block footer %}
+  <div class="container" align="left" style="max-width: 1000px; height:100px; background: linear-gradient(to bottom, #000000, #1a1d20); color: #fff;">
+    <div class="row align-items-start">
+      <div class="col-lg-7" style="height: 100px; display: flex; align-items: center;">
+        <img src="/media/img/ANEKO_transp.png" height="90%">
+        <font>
+          Development and design by
+          <a href="https://github.com/Arty525" target="_blank" class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+            Andrey Egorov (Arty)
+          </a>
+          © 2025
+        </font>
+      </div>
+      <div class="col-lg-5" style="height: 100px; display: flex; align-items: center; justify-content: right;">
+        <a href="https://getbootstrap.ru/" target="_blank" class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bootstrap" viewBox="0 0 20 16">
+            <path d="M5.062 12h3.475c1.804 0 2.888-.908 2.888-2.396 0-1.102-.761-1.916-1.904-2.034v-.1c.832-.14 1.482-.93 1.482-1.816 0-1.3-.955-2.11-2.542-2.11H5.062V12zm1.313-4.875V4.658h1.78c.973 0 1.542.457 1.542 1.237 0 .802-.604 1.23-1.764 1.23H6.375zm0 3.762V8.162h1.822c1.236 0 1.887.463 1.887 1.348 0 .896-.627 1.377-1.811 1.377H6.375z"/>
+            <path d="M0 4a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4zm4-3a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3H4z"/>
+          </svg> Using Bootstrap technologies</a>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
 </div>
 </body>
 </html>

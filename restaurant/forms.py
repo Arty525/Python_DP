@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Reservation, Table, Content, Contacts
+from .models import Reservation, Table, Content, Contacts, Team, Service, Feedback, Chief, SousChef
 
 
 class ReservationSearchForm(forms.Form):
@@ -51,24 +51,6 @@ class ReservationSearchForm(forms.Form):
             'guests': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 20}),
             'celebration': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-    # def __init__(self, *args, **kwargs):
-    #     super(ReservationSearchForm, self).__init__(*args, **kwargs)
-    #
-    #     self.fields['table'].queryset = Table.objects.all()
-    #     self.fields['table'].empty_label = "Выберите стол"
-    #
-    #     # Устанавливаем атрибуты для options столов
-    #     self.fields['table'].widget.attrs.update({
-    #         'class': 'form-select',
-    #         'data-live-search': 'true'
-    #     })
-    #
-    #     # Устанавливаем начальную дату (сегодня)
-    #     self.fields['date'].initial = timezone.now().date()
-    #
-    #     # Для radio кнопок времени
-    #     self.fields['time'].widget.attrs = {'class': 'btn-check'}
 
 
 class ReservationForm(forms.ModelForm):
@@ -148,20 +130,23 @@ class ReservationForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(ReservationForm, self).clean()
         date = cleaned_data.get("date")
+        duration = int(cleaned_data.get("duration"))
         time = datetime.strptime(cleaned_data.get("start_time"), '%H:%M').time()
         guests = cleaned_data.get("guests")
         table = cleaned_data.get("table")
         now_date = timezone.localtime(timezone.now()).date()
         now_time = timezone.localtime(timezone.now()).time()
 
+        dummy_date = timezone.now().date()
+        combined_datetime = datetime.combine(dummy_date, time)
+        reserve_time = combined_datetime + timedelta(hours=duration)
+
+        if reserve_time.time() < datetime.strptime("22:00", '%H:%M').time():
+            raise forms.ValidationError("Время бронирования превышает время работы ресторана")
+
         try:
-            table_reservation = Reservation.objects.filter(date=date, table=table, status__in=['active', 'created'])
-            if table_reservation.exists():
-                # Создаем фиктивную дату
-                dummy_date = timezone.now().date()
-                # Комбинируем дату и время
-                combined_datetime = datetime.combine(dummy_date, time)
-                # Прибавляем часы
+            table_reservation = Reservation.objects.get(date=date, table=table, status__in=['active', 'created'])
+            if table_reservation:
                 reserve_time = combined_datetime + timedelta(hours=table_reservation.duration)
                 if date and time and date == now_date and time <= reserve_time.time():
                     raise ValidationError("Столик на это время уже занят")
@@ -232,13 +217,33 @@ class RestaurantDescriptionForm(forms.ModelForm):
     content_type = forms.CharField(initial='description', widget=forms.HiddenInput())
     class Meta:
         model = Content
-        fields = ['content_type', 'title', 'text', 'image', 'is_active']
-        required = ['text', 'image', 'title']
+        fields = ['content_type', 'title', 'text', 'is_active']
+        required = ['text', 'title']
         labels = {
             "text": "Текст",
             "title": "Название",
-            "image": "Изображение",
-            "is_active": "Показ описания"
+            "is_active": "Показ контента"
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'text': forms.Textarea(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class RestaurantHistoryForm(forms.ModelForm):
+    content_type = forms.CharField(initial='history', widget=forms.HiddenInput())
+
+    class Meta:
+        model = Content
+        fields = ['content_type', 'title', 'text', 'image', 'is_active']
+        required = ['text', 'image', 'title']
+        exclude = ['video']
+        labels = {
+            "text": "Текст",
+            "title": "Название",
+            "image": "Фото основателя",
+            "is_active": "Показ контента"
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
@@ -260,10 +265,64 @@ class RestaurantDescriptionForm(forms.ModelForm):
             return image
 
 
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = '__all__'
+
+        labels = {
+            'title': 'Название услуги',
+            'description': 'Описание услуги',
+            'image': 'Изображение',
+            'price': 'Стоимость услуги',
+            'is_active': 'Активна',
+        }
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image', False)
+        if image is not None:
+            valid_extensions = ['.jpg', '.jpeg', '.png']
+            extension = os.path.splitext(image.name)[1].lower()
+            if extension not in valid_extensions:
+                raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+            max_size = 5 * 1024 * 1024
+            if image.size > max_size:
+                raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб')
+            return image
+
+
+class RestaurantMissionForm(forms.ModelForm):
+    content_type = forms.CharField(initial='mission', widget=forms.HiddenInput())
+
+    class Meta:
+        model = Content
+        fields = ['content_type', 'title', 'text', 'is_active']
+        required = ['text', 'title']
+        exclude = ['video']
+        labels = {
+            "text": "Текст",
+            "title": "Название",
+            "is_active": "Показ контента"
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'text': forms.Textarea(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
 class ContactForm(forms.ModelForm):
     class Meta:
         model = Contacts
-        fields = ['mobile_phone_number', 'phone_number', 'email', 'city', 'address', 'subway']
+        fields = ['mobile_phone_number', 'phone_number', 'email', 'city', 'address', 'subway', 'vk', 'tg']
         required = ['mobile_phone_number', 'phone_number', 'email', 'city', 'address']
         labels = {
             'mobile_phone_number': 'Мобильный телефон',
@@ -271,7 +330,9 @@ class ContactForm(forms.ModelForm):
             'email': 'Email',
             'city': 'Город',
             'address': 'Адрес',
-            'subway': 'Станция метро'
+            'subway': 'Станция метро',
+            'vk': 'VK',
+            'tg': 'Telegram'
         }
         widgets = {
             'mobile_phone_number': forms.TextInput(attrs={'class': 'form-control'}),
@@ -280,4 +341,133 @@ class ContactForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class': 'form-control'}),
             'address': forms.TextInput(attrs={'class': 'form-control'}),
             'subway': forms.TextInput(attrs={'class': 'form-control'}),
+            'vk': forms.TextInput(attrs={'class': 'form-control'}),
+            'tg': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+
+class ChiefForm(forms.ModelForm):
+    class Meta:
+        model = Chief
+        fields = '__all__'
+        labels = {
+            'name': 'Шеф',
+            'photo': 'Фото шефа',
+            'description': 'Описание шефа',
+            'vk': 'Ссылка на VK шефа',
+            'tg': 'Ссылка на Telegram канал шефа',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+            'vk': forms.TextInput(attrs={'class': 'form-control'}),
+            'tg': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+        def clean_photo(self):
+            image = self.cleaned_data.get('chief_photo', False)
+            if image is not None:
+                valid_extensions = ['.jpg', '.jpeg', '.png']
+                extension = os.path.splitext(image.name)[1].lower()
+                if extension not in valid_extensions:
+                    raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+                max_size = 5 * 400 * 600
+                if image.size > max_size:
+                    raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб 400x600 px')
+                return image
+
+
+class SousChefForm(forms.ModelForm):
+    class Meta:
+        model = SousChef
+        fields = '__all__'
+        labels = {
+            'name': 'Су-шеф',
+            'photo': 'Фото су-шефа',
+            'description': 'Описание су-шефа',
+            'vk': 'Ссылка на VK су-шефа',
+            'tg': 'Ссылка на Telegram канал су-шефа',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'vk': forms.TextInput(attrs={'class': 'form-control'}),
+            'tg': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+        def clean_photo(self):
+            image = self.cleaned_data.get('chief_photo', False)
+            if image is not None:
+                valid_extensions = ['.jpg', '.jpeg', '.png']
+                extension = os.path.splitext(image.name)[1].lower()
+                if extension not in valid_extensions:
+                    raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+                max_size = 5 * 400 * 600
+                if image.size > max_size:
+                    raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб 400x600 px')
+                return image
+
+
+class TeamForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = '__all__'
+        labels = {
+            'description': 'Описание команды',
+            'photo': 'Фото команды'
+        }
+        widgets = {
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+        def clean_photo(self):
+            image = self.cleaned_data.get('team_photo', False)
+            if image is not None:
+                valid_extensions = ['.jpg', '.jpeg', '.png']
+                extension = os.path.splitext(image.name)[1].lower()
+                if extension not in valid_extensions:
+                    raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+                max_size = 5 * 1000 * 400
+                if image.size > max_size:
+                    raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб 1000x400 px')
+                return image
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['first_name', 'last_name', 'email', 'phone', 'text', 'image']
+        labels = {
+            'first_name': 'Имя',
+            'last_name': 'Фамилия',
+            'email': 'Email',
+            'phone': 'Телефон',
+            'text': 'Сообщение',
+            'image': 'Изображение'
+        }
+
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'required': True}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'text': forms.Textarea(attrs={'class': 'form-control', 'required': True, 'placeholder': 'Напишите нам все, что хотите сказать.'}),
+        }
+
+        def clean_image(self):
+            image = self.cleaned_data.get('image', False)
+            if image is not None:
+                valid_extensions = ['.jpg', '.jpeg', '.png']
+                extension = os.path.splitext(image.name)[1].lower()
+                if extension not in valid_extensions:
+                    raise ValidationError(f'Недопустимый формат файла, разрешены форматы: {valid_extensions}')
+
+                max_size = 5 * 1024 * 1024
+                if image.size > max_size:
+                    raise ValidationError('Файл слишком большой. Максимальный размер 5 Мб')
+                return image

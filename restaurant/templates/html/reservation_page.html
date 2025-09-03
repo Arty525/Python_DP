@@ -1,14 +1,12 @@
 {% extends 'html/base.html' %}
 {% load static %}
-
 {% block title %}Бронирование столика{% endblock %}
 {% block content %}
-
 <!-- Отображение общих ошибок формы -->
 {% if form.non_field_errors %}
 <div class="alert alert-danger">
     {% for error in form.non_field_errors %}
-    <p class="mb-0">{{ error }}</p>
+    <p class="mb-1">{{ error }}</p>
     {% endfor %}
 </div>
 {% endif %}
@@ -17,13 +15,12 @@
     {% csrf_token %}
 
     <!-- Поле даты с календарем -->
+    <h5>Выберите дату посещения</h5>
     <input type="date" class="form-control" id="date" name="date" placeholder="Дата" required>
-
+    <br>
     <!-- Поле времени - группа кнопок -->
-    <div class="mb-4">
-        <label class="form-label fw-bold required-field">
-            {{ form.start_time.label }}
-        </label>
+    <div class="mb-3">
+        <h5>Выберите время посещения</h5>
         <div class="btn-group flex-wrap" role="group">
             {% for choice in form.start_time %}
             <input type="radio" class="btn-check" name="start_time"
@@ -43,13 +40,9 @@
         {% endif %}
         <div class="form-text">Выберите время посещения</div>
     </div>
-
     <!-- Поле продолжительности - группа кнопок -->
-
     <div class="mb-4">
-        <label class="form-label fw-bold required-field">
-            {{ form.duration.label }}
-        </label>
+        <h5>Выберите продолжительность бронирования</h5>
         <div class="btn-group flex-wrap" role="group">
             {% for choice in form.duration %}
             <input type="radio" class="btn-check" name="duration"
@@ -70,29 +63,21 @@
         <div class="form-text">Выберите продолжительность бронирования</div>
     </div>
 
-
     <!-- Кнопка для обновления списка столов -->
     <div class="mb-3">
         <button type="button" class="btn btn-primary" onclick="loadTables()" id="loadTablesBtn">
-            <i class="bi bi-arrow-clockwise"></i> Загрузить доступные столы
+            <i class="bi bi-arrow-clockwise"></i>Просмотреть доступные столы на это время
         </button>
     </div>
 
     <!-- Контейнер для выбора стола -->
-    <div class="mb-4">
-        <label for="id_table" class="form-label fw-bold required-field">
-            Стол
-        </label>
-        <div class="input-group">
-        <span class="input-group-text">
-            <i class="bi bi-table"></i>
-        </span>
-            <select class="form-select" name="table" id="id_table" required disabled>
-                <option value="">-- Нажмите кнопку для загрузки столов --</option>
-            </select>
-        </div>
-        <div id="table-info" class="form-text mt-2"></div>
-
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <h5>Выберите стол</h5>
+        <select class="form-select" name="table" id="id_table" required disabled>
+            <option value="">-- Нажмите кнопку для загрузки столов --</option>
+        </select>
+            <div id="table-info" class="form-text mt-2"></div>
         {% if form.table.errors %}
         <div class="error-list">
             {% for error in form.table.errors %}
@@ -100,7 +85,6 @@
             {% endfor %}
         </div>
         {% endif %}
-    </div>
 
     <script>
         function loadTables() {
@@ -203,19 +187,11 @@
             loadBtn.disabled = !(date && time && duration);
         }
     </script>
+        </div>
 
-    <!-- Поля guests и celebration в одну строку -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <label for="{{ form.guests.id_for_label }}" class="form-label fw-bold required-field">
-                {{ form.guests.label }}
-            </label>
-            <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-people"></i>
-                                    </span>
-                {{ form.guests }}
-            </div>
+        <div class="col-md-4">
+            <h5>Укажите количество гостей</h5>
+            {{ form.guests }}
             {% if form.guests.errors %}
             <div class="error-list">
                 {% for error in form.guests.errors %}
@@ -224,14 +200,11 @@
             </div>
             {% endif %}
         </div>
-        <div class="col-md-6">
-            <label class="form-label fw-bold">
-                {{ form.celebration.label }}
-            </label>
+        <div class="col-md-4" style="display: flex; align-items: center;">
             <div class="form-check form-switch mt-2">
                 {{ form.celebration }}
                 <label class="form-check-label" for="{{ form.celebration.id_for_label }}">
-                    Отметить как праздник
+                    У меня праздник
                 </label>
             </div>
             {% if form.celebration.errors %}
@@ -245,11 +218,9 @@
     </div>
 
     <!-- Кнопка отправки -->
-    <div class="d-grid">
         <button type="submit" class="btn btn-primary btn-lg">
             <i class="bi bi-check-circle me-2"></i>
             Забронировать стол
         </button>
-    </div>
 </form>
 {% endblock %}

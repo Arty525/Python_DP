@@ -1,12 +1,51 @@
 from datetime import timedelta, datetime
-
 from django.db import models
-from django.utils import timezone
-
 from users.models import User
 
 
 # Create your models here.
+class Chief(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    photo = models.ImageField(upload_to='img/team/', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    vk = models.URLField(blank=True, null=True)
+    tg = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Шеф: {self.chief}"
+
+    class Meta:
+        verbose_name = "Шеф"
+        verbose_name_plural = "Шефы"
+
+
+class SousChef(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    photo = models.ImageField(upload_to='img/team/', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    vk = models.URLField(blank=True, null=True)
+    tg = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Су-шеф: {self.name}"
+
+    class Meta:
+        verbose_name = "Су-шеф"
+        verbose_name_plural = "Су-шефы"
+
+
+class Team(models.Model):
+    photo = models.ImageField(upload_to='img/team/', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Команда: {self.description}"
+
+    class Meta:
+        verbose_name = "Команда"
+        verbose_name_plural = "Команды"
+
+
 class Contacts(models.Model):
     mobile_phone_number = models.CharField(max_length=12, unique=True)
     phone_number = models.CharField(max_length=12, unique=True)
@@ -14,6 +53,8 @@ class Contacts(models.Model):
     city = models.CharField(max_length=20)
     subway = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField()
+    vk = models.URLField(blank=True, null=True)
+    tg = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.mobile_phone_number} | {self.phone_number} | {self.email} | {self.city} | {self.subway} | {self.address}"
@@ -23,15 +64,27 @@ class Contacts(models.Model):
         verbose_name_plural = "Контакты"
 
 
+class Service(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    image = models.ImageField(upload_to='img/service/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Услуга"
+        verbose_name_plural = "Услуги"
+
+
 class Content(models.Model):
     CONTENT_TYPE_CHOICES = [("carousel", "Карусель"),
-                            ("promotions", "Акции"),
                             ("services", "Услуги"),
-                            ("team", "Команда"),
                             ("mission", "Миссия ресторана"),
                             ("history", "История ресторана"),
                             ("contacts", "Контакты"),
-                            ("news", "Новости"),
                             ("description", "Описание ресторана")]
 
     title = models.CharField(max_length=100)
@@ -113,3 +166,27 @@ class Reservation(models.Model):
         verbose_name = "Бронь"
         verbose_name_plural = "Брони"
         ordering = ["date"]
+
+
+class Feedback(models.Model):
+    STATUS_CHOICES = [
+        ('not_processed', 'Не обработано'),
+        ('answered', 'Дан ответ'),
+        ('not_require_answer', 'Не требует ответа')
+    ]
+
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(unique=False)
+    phone = models.CharField(max_length=20, unique=False)
+    text = models.TextField()
+    image = models.ImageField(upload_to='img/feedback/', blank=True, null=True)
+    datetime = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default="not_processed")
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} {self.email} {self.phone} {self.datetime} {self.status}"
+
+    class Meta:
+        verbose_name = 'Обратная связь'
+        verbose_name_plural = 'Обратная связь'

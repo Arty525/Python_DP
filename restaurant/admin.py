@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from restaurant.models import Content, Table, Reservation, Contacts
+from restaurant.models import Content, Table, Reservation, Contacts, Team, Service, Feedback, Chief, SousChef
 
 
 # Register your models here.
@@ -28,3 +28,34 @@ class ReservationAdmin(admin.ModelAdmin):
 class ContactsAdmin(admin.ModelAdmin):
     list_display = ('id', 'mobile_phone_number', 'phone_number', 'email', 'city', 'address', 'subway')
     list_filter = ('mobile_phone_number', 'phone_number', 'email', 'city', 'address', 'subway')
+
+
+@admin.register(Chief)
+class ChiefAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+
+
+@admin.register(SousChef)
+class SousChefAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+
+
+
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ('id', 'description')
+    search_fields = ('description',)
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'description', 'price', 'is_active')
+    list_filter = ('title', 'description', 'price', 'is_active')
+    search_fields = ('title', 'description')
+
+
+@admin.register(Feedback)
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ('id', 'first_name', 'last_name', 'email', 'phone', 'datetime', 'status')
+    list_filter = ('first_name', 'last_name', 'email', 'phone', 'status')
+    search_fields = ('first_name', 'last_name', 'email', 'phone', 'text')
