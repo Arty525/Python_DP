@@ -16,10 +16,7 @@ from restaurant.forms import ReservationForm, ReservationSearchForm, CarouselUpl
     ContactForm, TeamForm, RestaurantHistoryForm, RestaurantMissionForm, ServiceForm, FeedbackForm, ChiefForm, \
     SousChefForm
 from restaurant.models import Reservation, Table, Content, Contacts, Team, Service, Feedback, SousChef, Chief
-from users.permissions import IsCurrentUser
-
-
-#from restaurant.serializers import ReservationSerializer
+from users.permissions import IsCurrentUser, IsStaff
 
 
 class HomePageCreateView(CreateView):
@@ -54,6 +51,19 @@ class FeedbackListView(ListView):
     model = Feedback
     template_name = 'html/feedback_list.html'
     context_object_name = 'feedback_list'
+
+
+class FeedbackDetailView(DetailView):
+    model = Feedback
+    template_name = 'html/feedback_detail.html'
+    context_object_name = 'feedback'
+
+
+class FeedbackDeleteView(DeleteView):
+    model = Feedback
+    template_name = 'html/feedback_delete.html'
+    context_object_name = 'feedback'
+    success_url = reverse_lazy('restaurant:home_page')
 
 
 class AboutPageTemplateView(TemplateView):
@@ -96,12 +106,20 @@ class ServiceListView(ListView):
     model = Service
     template_name = 'html/service_list.html'
     context_object_name = 'services'
+    permission_classes = (IsAuthenticated, IsStaff,)
 
 
 class ServiceDetailView(DetailView):
     model = Service
     template_name = 'html/service_detail.html'
     context_object_name = 'service'
+    def post(self, request, pk):
+        service = get_object_or_404(Service, pk=pk)
+        if request.user.is_staff or request.user.is_superuser:
+            service.is_active = not service.is_active
+            service.save()
+            return redirect('restaurant:service_detail', pk=pk)
+        return HttpResponseForbidden('У вас нет прав для изменения этой услуги')
 
 class ServiceUpdateView(LoginRequiredMixin, UpdateView):
     model = Service
@@ -177,6 +195,21 @@ class TeamCreateView(CreateView):
         return reverse_lazy("restaurant:about_page")
 
 
+class TeamDeleteView(LoginRequiredMixin, DeleteView):
+    model = Team
+    template_name = 'html/team_delete.html'
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
+class TeamUpdateView(LoginRequiredMixin, UpdateView):
+    model = Team
+    template_name = 'html/team_form.html'
+    form_class = TeamForm
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
 class ChiefCreateView(CreateView):
     model = Chief
     template_name = 'html/chief_form.html'
@@ -186,11 +219,40 @@ class ChiefCreateView(CreateView):
         return reverse_lazy("restaurant:about_page")
 
 
+class ChiefDeleteView(LoginRequiredMixin, DeleteView):
+    model = Chief
+    template_name = 'html/chief_delete.html'
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
+class ChiefUpdateView(LoginRequiredMixin, UpdateView):
+    model = Chief
+    template_name = 'html/chief_form.html'
+    form_class = ChiefForm
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
 class SousChefCreateView(CreateView):
     model = SousChef
     template_name = 'html/sous_chef_form.html'
     form_class = SousChefForm
 
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
+class SousChefDeleteView(LoginRequiredMixin, DeleteView):
+    model = SousChef
+    template_name = 'html/sous_chef_delete.html'
+    def get_success_url(self):
+        return reverse_lazy("restaurant:about_page")
+
+
+class SousChefUpdateView(LoginRequiredMixin, UpdateView):
+    model = SousChef
+    template_name = 'html/sous_chef_form.html'
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
@@ -302,12 +364,52 @@ class CarouselContentCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("restaurant:home_page")
 
 
+class CarouselContentUpdateView(LoginRequiredMixin, UpdateView):
+    model = Content
+    form_class = CarouselUploadForm
+    login_url = reverse_lazy("users:login")
+    def get_success_url(self):
+        return reverse_lazy("restaurant:home_page")
+
+
+class CarouselContentDeleteView(LoginRequiredMixin, DeleteView):
+    model = Content
+    template_name = 'html/carousel_form.html'
+    login_url = reverse_lazy("users:login")
+    def get_success_url(self):
+        return reverse_lazy("restaurant:home_page")
+
+
+class CarouselContentListView(LoginRequiredMixin, ListView):
+    model = Content
+    template_name = 'html/carousel_detail.html'
+    login_url = reverse_lazy("users:login")
+    context_object_name = 'carousel'
+    def get_context_data(self, **kwargs):
+        context = Content.objects.filet(content_type='carousel')
+        return context
+
 class DescriptionCreateView(LoginRequiredMixin, CreateView):
     model = Content
     template_name = 'html/description_form.html'
     form_class = RestaurantDescriptionForm
     login_url = reverse_lazy("users:login")
+    def get_success_url(self):
+        return reverse_lazy("restaurant:home_page")
 
+
+class DescriptionUpdateView(LoginRequiredMixin, UpdateView):
+    model = Content
+    form_class = RestaurantDescriptionForm
+    login_url = reverse_lazy("users:login")
+    def get_success_url(self):
+        return reverse_lazy("restaurant:home_page")
+
+
+class DescriptionDeleteView(LoginRequiredMixin, DeleteView):
+    model = Content
+    template_name = 'html/description_form.html'
+    login_url = reverse_lazy("users:login")
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
@@ -321,14 +423,18 @@ class ContactsCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
-# class ReservationCancelView(LoginRequiredMixin, View):
-#     permission_required = (IsAuthenticated,)
-#     def post(self, request, pk):
-#         reservation = get_object_or_404(Reservation, id=pk)
-#         if request.user == reservation.user or request.user.is_staff:
-#             reservation.status = 'cancelled'
-#             reservation.save()
-#             return redirect(reverse_lazy("restaurant:reservation_detail", kwargs={'pk': pk}))
-#         return HttpResponseForbidden("У вас нет прав для отключения этой рассылки")
+
+class ContactUpdateView(LoginRequiredMixin, UpdateView):
+    model = Contact
+    form_class = ContactForm
+    login_url = reverse_lazy("users:login")
+    def get_success_url(self):
+        return reverse_lazy("restaurant:home_page")
 
 
+class ContactDeleteView(LoginRequiredMixin, DeleteView):
+    model = Contact
+    template_name = 'html/contact_form.html'
+    login_url = reverse_lazy("users:login")
+    def get_success_url(self):
+        return reverse_lazy("restaurant:home_page")

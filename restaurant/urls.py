@@ -6,13 +6,15 @@ from restaurant import views, services
 from restaurant.views import HomePageCreateView, AboutPageTemplateView, ReservationPageCreateView, \
     ReservationDetailView, ReservationUpdateView, ReservationListView, CarouselContentCreateView, \
     ContentManagementTemplateView, DescriptionCreateView, ContactsCreateView, TeamCreateView, HistoryCreateView, \
-    MissionCreateView, ServiceCreateView, FeedbackListView, ChiefCreateView, SousChefCreateView
+    MissionCreateView, ServiceCreateView, FeedbackListView, ChiefCreateView, SousChefCreateView, ServiceListView, \
+    ServiceDetailView, ServiceDeleteView, ServiceUpdateView
 
 app_name = "restaurant"
 
 urlpatterns = [
     path("", HomePageCreateView.as_view(), name="home_page"),
     path("about/", AboutPageTemplateView.as_view(), name="about_page"),
+
     path("new_reservation/", ReservationPageCreateView.as_view(), name="reservation_page"),
     path("reservation/<int:pk>", ReservationDetailView.as_view(), name="reservation_detail"),
     path("reservation/<int:pk>/update/", ReservationUpdateView.as_view(), name="reservation_update"),
@@ -21,15 +23,31 @@ urlpatterns = [
     path("reservation/<int:pk>/confirm/", services.reservation_confirm, name="reservation_confirm"),
     path("reservations/list/", ReservationListView.as_view(), name="reservations_list"),
     path('get-free-tables/', services.get_free_tables, name='get_free_tables'),
-    path('content/carousel/create', CarouselContentCreateView.as_view(), name='carousel_create'),
-    path('content/restaurant_description/create', DescriptionCreateView.as_view(), name='description_create'),
-    path('content/restaurant_history/create', HistoryCreateView.as_view(), name='history_create'),
-    path('content/restaurant_mission/create', MissionCreateView.as_view(), name='mission_create'),
-    path('contacts/create', ContactsCreateView.as_view(), name='contacts_create'),
-    path('service/create', ServiceCreateView.as_view(), name='service_create'),
+
+    path('content/carousel/create/', CarouselContentCreateView.as_view(), name='carousel_create'),
+
+    path('content/restaurant_description/create/', DescriptionCreateView.as_view(), name='description_create'),
+
+    path('content/restaurant_history/create/', HistoryCreateView.as_view(), name='history_create'),
+
+    path('content/restaurant_mission/create/', MissionCreateView.as_view(), name='mission_create'),
+
+    path('contacts/create/', ContactsCreateView.as_view(), name='contacts_create'),
+
+    path('service/create/', ServiceCreateView.as_view(), name='service_create'),
+    path('service/list/', ServiceListView.as_view(), name='service_list'),
+    path('service/delete/<int:pk>', ServiceDeleteView.as_view(), name='service_delete'),
+    path('service/update/<int:pk>', ServiceUpdateView.as_view(), name='service_update'),
+    path('service/detail/<int:pk>', ServiceDetailView.as_view(), name='service_detail'),
+
     path('about/team/create/', TeamCreateView.as_view(), name='team_create'),
+
     path('about/chief/create/', ChiefCreateView.as_view(), name='chief_create'),
+
     path('about/sous_chef/create/', SousChefCreateView.as_view(), name='sous_chef_create'),
+
     path('content/management/', ContentManagementTemplateView.as_view(), name='content_management'),
+
     path('feedback/list/', FeedbackListView.as_view(), name='feedback_list'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
