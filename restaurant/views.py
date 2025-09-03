@@ -349,11 +349,6 @@ class ReservationUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy("users:profile", kwargs={'pk': self.object.pk})
 
 
-class ContentManagementTemplateView(TemplateView):
-    template_name = 'html/content_management.html'
-    login_url = reverse_lazy("users:login")
-
-
 class CarouselContentCreateView(LoginRequiredMixin, CreateView):
     model = Content
     template_name = 'html/carousel_form.html'
@@ -367,6 +362,7 @@ class CarouselContentCreateView(LoginRequiredMixin, CreateView):
 class CarouselContentUpdateView(LoginRequiredMixin, UpdateView):
     model = Content
     form_class = CarouselUploadForm
+    template_name = 'html/carousel_form.html'
     login_url = reverse_lazy("users:login")
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
@@ -374,20 +370,32 @@ class CarouselContentUpdateView(LoginRequiredMixin, UpdateView):
 
 class CarouselContentDeleteView(LoginRequiredMixin, DeleteView):
     model = Content
-    template_name = 'html/carousel_form.html'
+    template_name = 'html/carousel_delete.html'
     login_url = reverse_lazy("users:login")
+    context_object_name = 'slide'
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
 class CarouselContentListView(LoginRequiredMixin, ListView):
     model = Content
-    template_name = 'html/carousel_detail.html'
+    template_name = 'html/carousel_list.html'
     login_url = reverse_lazy("users:login")
-    context_object_name = 'carousel'
-    def get_context_data(self, **kwargs):
-        context = Content.objects.filet(content_type='carousel')
-        return context
+    context_object_name = 'slides'
+
+    def get_queryset(self, **kwargs):
+        queryset = Content.objects.filter(content_type='carousel')
+        print(queryset)
+        return queryset
+
+    def post(self, request, pk, *args, **kwargs):
+        slide = get_object_or_404(Content, pk=pk)
+        if request.user.is_staff or request.user.is_superuser:
+            slide.is_active = not slide.is_active
+            slide.save()
+            return redirect('restaurant:carousel_list')
+        return HttpResponseForbidden('У вас нет прав для изменения этого слайда')
+
 
 class DescriptionCreateView(LoginRequiredMixin, CreateView):
     model = Content
@@ -424,7 +432,7 @@ class ContactsCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("restaurant:home_page")
 
 
-class ContactUpdateView(LoginRequiredMixin, UpdateView):
+class ContactsUpdateView(LoginRequiredMixin, UpdateView):
     model = Contact
     form_class = ContactForm
     login_url = reverse_lazy("users:login")
@@ -432,7 +440,7 @@ class ContactUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy("restaurant:home_page")
 
 
-class ContactDeleteView(LoginRequiredMixin, DeleteView):
+class ContactsDeleteView(LoginRequiredMixin, DeleteView):
     model = Contact
     template_name = 'html/contact_form.html'
     login_url = reverse_lazy("users:login")
