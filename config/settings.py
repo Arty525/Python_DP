@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     "users",
     'django_filters',
     'drf_yasg',
-    'django_celery_beat',
 ]
 
 REST_FRAMEWORK = {
