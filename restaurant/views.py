@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
@@ -51,6 +51,9 @@ class FeedbackListView(ListView):
     model = Feedback
     template_name = 'html/feedback_list.html'
     context_object_name = 'feedback_list'
+    def has_permission(self):
+        if not self.request.user.is_staff or not self.request.user.is_superuser:
+            raise PermissionDenied("Вы не можете просматривать эту страницу")
 
 
 class FeedbackDetailView(DetailView):

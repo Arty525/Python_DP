@@ -1,15 +1,67 @@
 {% extends 'html/base.html' %}
 {% block title %}Бронь на {{reservation.date|date:"j.n.Y" }} {{ reservation.start_time|time:"H:i" }} - {{ reservation.end_time|time:"H:i" }}{% endblock %}
 {% block content %}
-{{ reservation }}
-<a href="{% url 'restaurant:reservation_update' reservation.pk %}" class="btn btn-primary">Изменить</a>
-<a href="{% url 'restaurant:reservation_delete' reservation.pk %}" class="btn btn-danger">Удалить</a>
-<form method="post" action="{% url 'restaurant:reservation_cancel' reservation.pk %}" style="padding-top: 10px">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Отменить</button>
-</form>
-<form method="post" action="{% url 'restaurant:reservation_confirm' reservation.pk %}" style="padding-top: 10px">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-success">Подтвердить</button>
-</form>
+{% if reservation.status == 'created' %}
+<div class="alert alert-warning" role="alert" style="background-color: #ffff8c;">
+  Ожидает подтверждения
+</div>
+{% elif reservation.status == 'active' %}
+<div class="alert alert-success" role="alert">
+  Бронирование подтверждено
+</div>
+{% elif reservation.status == 'cancelled'%}
+<div class="alert alert-danger" role="alert">
+  Бронирование отменено
+</div>
+{% elif reservation.status == 'completed'%}
+<div class="alert alert-light" role="alert">
+  Бронирование завершено
+</div>
+{% endif %}
+
+<div class="card" >
+    <div class="card-body">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    Номер стола: {{ reservation.table.number }}
+                </div>
+                <div class="col">
+                    Гость: {{ reservation.user.first_name }} {{ reservation.user.last_name }}
+                </div>
+                <div class="col">
+                    Количество гостей: {{ reservation.guests }}
+                </div>
+            </div>
+            <div class="row align-items-center" style="padding-top:15px">
+                <div class="col">
+                    Зал: {{ reservation.table.hall }}
+                </div>
+                <div class="col">
+                    Дата: {{ reservation.date|date:"j.n.Y" }}
+                </div>
+                <div class="col">
+                    Время бронирования: {{ reservation.start_time|time:"H:i" }} - {{ reservation.end_time|time:"H:i" }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if reservation.celebration and user.is_staff or user.is_superuser%}
+    <div class="alert alert-primary" style="margin: 15px 15px 15px 15px;" role="alert">
+        У гостя знаменательное событие! Не забудьте уточнить детали и поздравить от имени ресторана!
+    </div>
+    {% endif %}
+    {% if reservation.status == 'created' and user.is_staff or user.is_superuser %}
+    <form method="post" action="{% url 'restaurant:reservation_confirm' reservation.pk %}" style="padding-bottom: 15px">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Подтвердить бронь</button>
+    </form>
+    {% endif %}
+    {% if reservation.status == 'active' or reservation.status == 'created' %}
+    <form method="post" action="{% url 'restaurant:reservation_cancel' reservation.pk %}" style="padding-bottom: 15px">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Отменить</button>
+    </form>
+    {% endif %}
+</div>
 {% endblock %}

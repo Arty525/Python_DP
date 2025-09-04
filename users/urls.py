@@ -3,14 +3,14 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from config import settings
-from users.views import ProfileView, CreateUserView, DeleteUserView, UpdateUserView, LoginUserView, \
+from users.views import UserDetailView, CreateUserView, DeleteUserView, UpdateUserView, LoginUserView, \
     UserReservationView, CustomLogoutView, VerifyEmailView, SuccessVerifyView, PasswordRecoveryRequestView, \
     PassRecoveryRequsetSuccess, PasswordChangeView, ChangeUserStatus
 
 app_name = 'users'
 
 urlpatterns = [
-    path('profile/<int:pk>/', ProfileView.as_view(), name='profile'),
+    path('profile/<int:pk>/', UserDetailView.as_view(), name='profile'),
     path('register/', CreateUserView.as_view(), name='register'),
     path('delete/', DeleteUserView.as_view(), name='delete'),
     path('update/', UpdateUserView.as_view(), name='update'),

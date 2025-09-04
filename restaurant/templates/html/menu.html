@@ -1,0 +1,60 @@
+<div align="center">
+  <div style="max-width:1000px;">
+    <div class="row align-items-start">
+      <div class="col-lg-7" style="max-width:50%">
+        <ul class="nav nav-underline" style="--bs-link-color: #a3a3a3; --bs-nav-link-hover-color: #ffffff; font-family:Tahoma;>
+          <li class="nav-item">
+        <a class="nav-link" aria-current="page" href="{% url 'restaurant:home_page' %}">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'restaurant:about_page' %}">О нас</a>
+        </li>
+        {% if not user.is_staff or user.is_superuser %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'restaurant:reservation_page' %}">Бронирование столов</a>
+        </li>
+        {% endif %}
+        </ul>
+      </div>
+      {% if user.is_authenticated %}
+      <div class="col-5" style="min-width:50%" align="right">
+        <form method="post" action="{% url 'users:logout' %}">
+          {% csrf_token %}
+          <div class="btn-group">
+            <button type="button" class="btn btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ user.first_name }}
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="{% url 'users:profile' user.pk %}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                  </svg>
+                  Профиль</a></li>
+              <li><button class="dropdown-item" type="submit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                  <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                </svg>
+                Выйти</button></li>
+            </ul>
+          </div>
+          {% if user.is_staff or user.is_superuser %}
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Администрирование
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'restaurant:reservations_list' %}">Список бронирований</a></li>
+            <li><a class="dropdown-item" href="{% url 'restaurant:feedback_list' %}">Просмотр обратной связи</a></li>
+          </ul>
+      </div>
+      {% endif %}
+      </form>
+      {% else %}
+      <div class="col-5" style="min-width:50%" align="right">
+        <a href="{% url 'users:login' %}" class="btn btn btn-outline-light">Войти</a>
+        <a href="{% url 'users:register' %}" class="btn btn btn-outline-light">Регистрация</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>

@@ -58,15 +58,17 @@ class ListUserView(generics.ListAPIView):
     permission_classes = (IsAuthenticated, IsStaff)
 
 
-class ProfileView(LoginRequiredMixin, ListView):
+class UserDetailView(LoginRequiredMixin, DetailView):
     login_url = reverse_lazy("users:login")
     template_name = "html/profile.html"
-    permission_classes = (IsCurrentUser, )
-    queryset = Reservation.objects.all()
+    queryset = User.objects.all()
     context_object_name = "reservations"
 
-    def get_queryset(self):
-        return Reservation.objects.filter(user=self.request.user)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = User.objects.get(pk=self.kwargs.get('pk'))
+        context['reservations'] = Reservation.objects.filter(user=self.kwargs.get('pk'))
+        return context
 
 
 class UpdateUserView(UpdateView):

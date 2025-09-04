@@ -141,7 +141,9 @@ class ReservationForm(forms.ModelForm):
         combined_datetime = datetime.combine(dummy_date, time)
         reserve_time = combined_datetime + timedelta(hours=duration)
 
-        if reserve_time.time() < datetime.strptime("22:00", '%H:%M').time():
+        print(reserve_time.time(),"|", datetime.strptime("22:00", '%H:%M').time())
+
+        if reserve_time.time() > datetime.strptime("22:00", '%H:%M').time():
             raise forms.ValidationError("Время бронирования превышает время работы ресторана")
 
         try:
