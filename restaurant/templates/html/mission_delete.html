@@ -1,0 +1,25 @@
+history_form.html
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Удаление миссии ресторана{% endblock %}
+{% block content %}
+<div class="card" style=" max-width: 95%; background-color: transparent; border-color: #707070; margin-top:15px;">
+    <div class="card-header" style="border-color: #707070; color: #ffffff;">
+        <h4>{{ mission.title }}</h4>
+    </div>
+    <div class="card-body" style="color: #a3a3a3" align="left">
+        <p class="card-text">{{ mission.text }}</p>
+        <div class="alert alert-danger" role="alert">
+            Вы действительно хотите удалить миссию ресторана?
+            <br>
+            <form method="post">
+                {% csrf_token%}
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-primary" type="submit">Удалить</button>
+                    <a href="{% url 'restaurant:about_page' %}" class="btn btn-outline-secondary" type="button">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

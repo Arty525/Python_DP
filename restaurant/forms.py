@@ -217,17 +217,15 @@ class RestaurantDescriptionForm(forms.ModelForm):
     content_type = forms.CharField(initial='description', widget=forms.HiddenInput())
     class Meta:
         model = Content
-        fields = ['content_type', 'title', 'text', 'is_active']
+        fields = ['content_type', 'title', 'text']
         required = ['text', 'title']
         labels = {
             "text": "Текст",
             "title": "Название",
-            "is_active": "Показ контента"
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'text': forms.Textarea(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 
@@ -236,19 +234,18 @@ class RestaurantHistoryForm(forms.ModelForm):
 
     class Meta:
         model = Content
-        fields = ['content_type', 'title', 'text', 'image', 'is_active']
+        fields = ['content_type', 'title', 'text', 'image']
         required = ['text', 'image', 'title']
         exclude = ['video']
         labels = {
             "text": "Текст",
             "title": "Название",
             "image": "Фото основателя",
-            "is_active": "Показ контента"
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'text': forms.Textarea(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
     def clean_image(self):
@@ -304,18 +301,16 @@ class RestaurantMissionForm(forms.ModelForm):
 
     class Meta:
         model = Content
-        fields = ['content_type', 'title', 'text', 'is_active']
+        fields = ['content_type', 'title', 'text']
         required = ['text', 'title']
         exclude = ['video']
         labels = {
             "text": "Текст",
             "title": "Название",
-            "is_active": "Показ контента"
         }
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'text': forms.Textarea(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 

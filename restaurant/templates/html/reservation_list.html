@@ -5,11 +5,14 @@
 <form method="get" class="needs-validation" novalidate>
     {% csrf_token %}
     <input class="form-control" id="first_name" name="first_name" type="text" placeholder="Имя" aria-label="Имя гостя">
+    <br>
     <input class="form-control" id="last_name" name="last_name" type="text" placeholder="Фамилия" aria-label="Фамилия гостя">
+    <br>
     <!-- Поле даты с календарем -->
     <input type="date" class="form-control" id="date" name="date" placeholder="Дата">
 
     <!-- Поле времени - группа кнопок -->
+    <br>
     <div class="mb-4">
         <label class="form-label fw-bold">
             {{ form.start_time.label }}
@@ -31,13 +34,12 @@
             {% endfor %}
         </div>
         {% endif %}
-        <div class="form-text">Выберите время посещения</div>
     </div>
 
     <!-- Контейнер для выбора стола -->
     <div class="mb-4">
-        <select class="form-select" id="table" aria-label="Пример выбора по умолчанию">
-            <option selected>Выберите номер стола</option>
+        <select class="form-select" name="table" id="table" aria-label="Пример выбора по умолчанию">
+            <option disabled selected>Выберите номер стола</option>
             {% for table in tables %}
             <option value="{{ table.id }}">
                 #️⃣ {{ table.number }}
@@ -53,7 +55,7 @@
         </select>
     </div>
 
-    <div class="form-check form-switch">
+    <div class="form-check form-switch" align="left">
         <input class="form-check-input" type="checkbox" role="switch" name="celebration" id="celebration" value="True">
         <label class="form-check-label" for="celebration">Праздник</label>
     </div>
@@ -63,6 +65,9 @@
     <button onclick="loadReservations()" class="btn btn-primary">
         <i class="bi bi-arrow-clockwise"></i> Обновить список
     </button>
+    <a href="{% url 'restaurant:reservations_list' %}" class="btn btn-secondary">
+        Сбросить фильтр
+    </a>
 
     <!-- Контейнер для списка -->
     <div class="btn-group-vertical" id="reservations-container" style="width:90%" role="group" aria-label="История бронирований">
@@ -105,39 +110,75 @@
         {% endfor %}
     </div>
 
-    <script>
-        function loadReservations() {
-            const container = document.getElementById('reservations-container');
-            const loading = document.getElementById('loading');
-            const date = document.getElementById('date').value;
-            const time = document.querySelector('input[name="time"]:checked')?.value;
-            const celebration = document.getElementById('celebration');
-            const first_name = document.getElementById('first_name').value;
-            const last_name = document.getElementById('last_name').value;
-            const table = document.getSelection('input[name="table"]:checked')?.value;
+<script>
+function loadReservations() {
+    const container = document.getElementById('reservations-container');
+    const date = document.getElementById('date').value;
+    const time = document.querySelector('input[name="time"]:checked')?.value;
+    const celebration = document.getElementById('celebration').value;
+    const first_name = document.getElementById('first_name').value;
+    const last_name = document.getElementById('last_name').value;
+    const table = document.querySelector('input[name="table"]:checked')?.value;
 
-            if (!date && !time && !first_name && !last_name && !table && !celebration) {
-                alert('Пожалуйста, выберите хотя бы один параметр');
-                return;
-            }
+    // Проверяем, что хотя бы одно поле заполнено
+    const hasFilters = date || time || first_name || last_name || table || celebration;
+    if (!hasFilters) {
+        alert('Пожалуйста, выберите хотя бы один параметр для поиска');
+        return;
+    }
 
-            // Отправляем запрос
-            fetch(`{% url 'restaurant:reservations_list' %}?date=${date}&time=${time}&first_name=${first_name}&last_name=${last_name}&table=${table}&celebration=${celebration}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Ошибка сети');
-                    return response.text();
-                })
-                .then(html => {
-                    container.innerHTML = html;
-                })
-                .catch(error => {
-                    container.innerHTML = `
+    // Создаем объект с параметрами
+    const params = new URLSearchParams();
+
+    // Добавляем только заполненные поля
+    if (date) params.append('date', date);
+    if (time) params.append('time', time);
+    if (first_name) params.append('first_name', first_name);
+    if (last_name) params.append('last_name', last_name);
+    if (table) params.append('table', table);
+    if (celebration) params.append('celebration', celebration);
+
+    // Показываем индикатор загрузки
+    container.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p>Поиск бронирований...</p>
+        </div>
+    `;
+
+    // Отправляем запрос
+    fetch(`{% url 'restaurant:reservations_list' %}?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+            return response.text();
+        })
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            container.innerHTML = `
                 <div class="alert alert-danger">
-                    Ошибка загрузки: ${error.message}
+                    <strong>Ошибка загрузки:</strong> ${error.message}
+                    <br><small>Попробуйте обновить страницу и повторить попытку</small>
                 </div>
             `;
-                })
-        }
-    </script>
+            console.error('Ошибка:', error);
+        });
+}
+
+// Дополнительно: можно добавить обработчик нажатия Enter в полях ввода
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('#first_name, #last_name, #date');
+    inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadReservations();
+            }
+        });
+    });
+});
+</script>
 </form>
 {% endblock %}

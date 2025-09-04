@@ -146,14 +146,6 @@ class HistoryCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy('restaurant:home_page')
 
 
-class HistoryDeleteView(LoginRequiredMixin, DeleteView):
-    model = Content
-    template_name = 'html/history_delete.html'
-
-    def get_success_url(self):
-        return reverse_lazy('restaurant:about_page')
-
-
 class HistoryUpdateView(LoginRequiredMixin, UpdateView):
     model = Content
     template_name = 'html/history_form.html'
@@ -161,6 +153,13 @@ class HistoryUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('restaurant:about_page')
 
+
+class HistoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Content
+    template_name = 'html/history_delete.html'
+    context_object_name = 'history'
+    def get_success_url(self):
+        return reverse_lazy('restaurant:about_page')
 
 class MissionCreateView(LoginRequiredMixin, CreateView):
     model = Content
@@ -174,6 +173,7 @@ class MissionCreateView(LoginRequiredMixin, CreateView):
 class MissionDeleteView(LoginRequiredMixin, DeleteView):
     model = Content
     template_name = 'html/mission_delete.html'
+    context_object_name = 'mission'
     def get_success_url(self):
         return reverse_lazy('restaurant:about_page')
 
@@ -198,6 +198,7 @@ class TeamCreateView(CreateView):
 class TeamDeleteView(LoginRequiredMixin, DeleteView):
     model = Team
     template_name = 'html/team_delete.html'
+    context_object_name = 'team'
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
@@ -222,6 +223,7 @@ class ChiefCreateView(CreateView):
 class ChiefDeleteView(LoginRequiredMixin, DeleteView):
     model = Chief
     template_name = 'html/chief_delete.html'
+    context_object_name = 'chief'
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
@@ -246,12 +248,14 @@ class SousChefCreateView(CreateView):
 class SousChefDeleteView(LoginRequiredMixin, DeleteView):
     model = SousChef
     template_name = 'html/sous_chef_delete.html'
+    context_object_name = 'sous_chef'
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
 class SousChefUpdateView(LoginRequiredMixin, UpdateView):
     model = SousChef
+    form_class = SousChefForm
     template_name = 'html/sous_chef_form.html'
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
@@ -305,6 +309,7 @@ class ReservationListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         request_data = self.request.GET.dict()
+        print(request_data)
         if request_data.get('csrfmiddlewaretoken'):
             del request_data['csrfmiddlewaretoken']
         if request_data.get('date') is not None:
@@ -424,7 +429,7 @@ class DescriptionDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class ContactsCreateView(LoginRequiredMixin, CreateView):
-    model = Contact
+    model = Contacts
     template_name = 'html/contact_form.html'
     form_class = ContactForm
     login_url = reverse_lazy("users:login")
@@ -434,15 +439,17 @@ class ContactsCreateView(LoginRequiredMixin, CreateView):
 
 
 class ContactsUpdateView(LoginRequiredMixin, UpdateView):
-    model = Contact
+    model = Contacts
+    template_name = 'html/contact_form.html'
     form_class = ContactForm
     login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
 class ContactsDeleteView(LoginRequiredMixin, DeleteView):
-    model = Contact
+    model = Contacts
     template_name = 'html/contact_form.html'
     login_url = reverse_lazy("users:login")
     def get_success_url(self):
