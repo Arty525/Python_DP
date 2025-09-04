@@ -3,7 +3,6 @@ from datetime import timedelta, datetime
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.db.models import Q
 from django.utils import timezone
 
 from .models import Reservation, Table, Content, Contacts, Team, Service, Feedback, Chief, SousChef

@@ -17,6 +17,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def is_running_in_docker():
+    return os.path.exists('/.dockerenv') or os.environ.get('DOCKER_CONTAINER') == 'true'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -118,7 +121,7 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
+        "HOST": 'db' if is_running_in_docker() else os.getenv('DB_HOST', 'localhost'),
         "PORT": os.getenv("DB_PORT", default="5432"),
     }
 }
@@ -185,31 +188,5 @@ EMAIL_HOST_USER = os.getenv("APP_EMAIL")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS")
 DEFAULT_FROM_EMAIL = os.getenv("APP_EMAIL")
 ADMIN_EMAIL = os.getenv("APP_EMAIL")
-
-# Настройки для Celery
-
-# URL-адрес брокера сообщений
-CELERY_BROKER_URL = 'redis://localhost:6379' # Например, Redis, который по умолчанию работает на порту 6379
-
-# URL-адрес брокера результатов, также Redis
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-
-# Часовой пояс для работы Celery
-CELERY_TIMEZONE = "Europe/Moscow"
-
-# Флаг отслеживания выполнения задач
-CELERY_TASK_TRACK_STARTED = True
-
-# Максимальное время на выполнение задачи
-CELERY_TASK_TIME_LIMIT = 30 * 60
-
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-
-CELERY_BEAT_SCHEDULE = {
-    'change_reservation_status': {
-        'task': 'restaurant.tasks.change_reservation_status',
-        'schedule': timedelta(minutes=5),
-    },
-}
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'

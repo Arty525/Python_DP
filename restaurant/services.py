@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
-
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_GET, require_POST
-
 from restaurant.models import Reservation, Table
 
 

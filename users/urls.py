@@ -4,7 +4,7 @@ from django.urls import path
 
 from config import settings
 from users.views import UserDetailView, CreateUserView, DeleteUserView, UpdateUserView, LoginUserView, \
-    UserReservationView, CustomLogoutView, VerifyEmailView, SuccessVerifyView, PasswordRecoveryRequestView, \
+    UserReservationView, VerifyEmailView, SuccessVerifyView, PasswordRecoveryRequestView, \
     PassRecoveryRequsetSuccess, PasswordChangeView, ChangeUserStatus
 
 app_name = 'users'

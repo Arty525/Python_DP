@@ -39,7 +39,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=50, verbose_name="Фамилия", null=True, blank=True)
     phone_number = models.CharField(max_length=50, verbose_name="Номер телефона")
     last_login = models.DateTimeField(auto_now=True, verbose_name="Последний вход", blank=True, null=True)
-    is_active = models.BooleanField(default=False, verbose_name="Активен")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
     is_staff = models.BooleanField(default=False, verbose_name="Персонал")
     is_banned = models.BooleanField(default=False, verbose_name="Бан")
 

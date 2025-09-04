@@ -2,7 +2,7 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from config import settings
-from restaurant import views, services
+from restaurant import services
 from restaurant.views import (HomePageCreateView, AboutPageTemplateView, ReservationPageCreateView, \
                               ReservationDetailView, ReservationUpdateView, ReservationListView,
                               CarouselContentCreateView,

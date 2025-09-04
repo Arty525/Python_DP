@@ -1,21 +1,15 @@
 from datetime import datetime, timedelta
-from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.db.models import Q
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden
-from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views import generic, View
-from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, DeleteView, UpdateView
-from drf_yasg.openapi import Contact
-from rest_framework.permissions import IsAuthenticated
-
 from restaurant.forms import ReservationForm, ReservationSearchForm, CarouselUploadForm, RestaurantDescriptionForm, \
     ContactForm, TeamForm, RestaurantHistoryForm, RestaurantMissionForm, ServiceForm, FeedbackForm, ChiefForm, \
     SousChefForm
 from restaurant.models import Reservation, Table, Content, Contacts, Team, Service, Feedback, SousChef, Chief
-from users.permissions import IsCurrentUser, IsStaff
+
 
 
 class HomePageCreateView(CreateView):
