@@ -1,0 +1,10 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Обратная связь{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.status }}
+    <button type="submit" class="btn btn-primary">Изменить статус</button>
+</form>
+{% endblock %}

@@ -438,14 +438,15 @@ class TeamForm(forms.ModelForm):
 class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
-        fields = ['first_name', 'last_name', 'email', 'phone', 'text', 'image']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'text', 'image', 'status']
         labels = {
             'first_name': 'Имя',
             'last_name': 'Фамилия',
             'email': 'Email',
             'phone': 'Телефон',
             'text': 'Сообщение',
-            'image': 'Изображение'
+            'image': 'Изображение',
+            'status': 'Статус'
         }
 
         widgets = {

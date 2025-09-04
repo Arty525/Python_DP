@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
@@ -47,30 +46,45 @@ class HomePageCreateView(CreateView):
         return context
 
 
-class FeedbackListView(ListView):
+class FeedbackListView(PermissionRequiredMixin, ListView):
     model = Feedback
     template_name = 'html/feedback_list.html'
     context_object_name = 'feedback_list'
-    def has_permission(self):
-        if not self.request.user.is_staff or not self.request.user.is_superuser:
-            raise PermissionDenied("Вы не можете просматривать эту страницу")
+    permission_required = 'restaurant.view_feedback'
+    login_url = reverse_lazy("users:login")
 
 
-class FeedbackDetailView(DetailView):
+class FeedbackDetailView(PermissionRequiredMixin, DetailView):
     model = Feedback
     template_name = 'html/feedback_detail.html'
     context_object_name = 'feedback'
+    permission_required = 'restaurant.view_feedback'
+    login_url = reverse_lazy("users:login")
 
 
-class FeedbackDeleteView(DeleteView):
+class FeedbackUpdateView(PermissionRequiredMixin, UpdateView):
+    model = Feedback
+    template_name = 'html/feedback_update.html'
+    form_class = FeedbackForm
+    permission_required = 'restaurant.change_feedback'
+    login_url = reverse_lazy("users:login")
+
+    def get_success_url(self):
+        return reverse_lazy('restaurant:feedback_list')
+
+
+class FeedbackDeleteView(PermissionRequiredMixin, DeleteView):
     model = Feedback
     template_name = 'html/feedback_delete.html'
     context_object_name = 'feedback'
     success_url = reverse_lazy('restaurant:home_page')
+    permission_required = 'restaurant.delete_feedback'
+    login_url = reverse_lazy("users:login")
 
 
 class AboutPageTemplateView(TemplateView):
     template_name = 'html/about.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
@@ -96,178 +110,231 @@ class AboutPageTemplateView(TemplateView):
         return context
 
 
-class ServiceCreateView(LoginRequiredMixin, CreateView):
+class ServiceCreateView(PermissionRequiredMixin, CreateView):
     model = Service
     template_name = 'html/service_form.html'
     form_class = ServiceForm
+    permission_required = 'restaurant.add_service'
+    login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy('restaurant:home_page')
 
 
-class ServiceListView(ListView):
+class ServiceListView(PermissionRequiredMixin, ListView):
     model = Service
     template_name = 'html/service_list.html'
     context_object_name = 'services'
-    permission_classes = (IsAuthenticated, IsStaff,)
+    permission_required = 'restaurant.view_service'
+    login_url = reverse_lazy("users:login")
 
 
-class ServiceDetailView(DetailView):
+class ServiceDetailView(PermissionRequiredMixin, DetailView):
     model = Service
     template_name = 'html/service_detail.html'
     context_object_name = 'service'
-    def post(self, request, pk):
-        service = get_object_or_404(Service, pk=pk)
-        if request.user.is_staff or request.user.is_superuser:
-            service.is_active = not service.is_active
-            service.save()
-            return redirect('restaurant:service_detail', pk=pk)
-        return HttpResponseForbidden('У вас нет прав для изменения этой услуги')
+    permission_required = 'restaurant.view_service'
+    login_url = reverse_lazy("users:login")
 
-class ServiceUpdateView(LoginRequiredMixin, UpdateView):
+    def post(self, request, pk):
+        if not request.user.has_perm('restaurant.change_service'):
+            return HttpResponseForbidden('У вас нет прав для изменения этой услуги')
+
+        service = get_object_or_404(Service, pk=pk)
+        service.is_active = not service.is_active
+        service.save()
+        return redirect('restaurant:service_detail', pk=pk)
+
+
+class ServiceUpdateView(PermissionRequiredMixin, UpdateView):
     model = Service
     template_name = 'html/service_form.html'
     form_class = ServiceForm
+    permission_required = 'restaurant.change_service'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy('restaurant:home_page')
 
 
-class ServiceDeleteView(LoginRequiredMixin, DeleteView):
+class ServiceDeleteView(PermissionRequiredMixin, DeleteView):
     model = Service
     template_name = 'html/service_delete.html'
     success_url = reverse_lazy('restaurant:home_page')
+    permission_required = 'restaurant.delete_service'
+    login_url = reverse_lazy("users:login")
+
+
+class HistoryCreateView(PermissionRequiredMixin, CreateView):
+    model = Content
+    template_name = 'html/history_form.html'
+    form_class = RestaurantHistoryForm
+    permission_required = 'restaurant.add_content'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy('restaurant:home_page')
 
 
-class HistoryCreateView(LoginRequiredMixin, CreateView):
+class HistoryUpdateView(PermissionRequiredMixin, UpdateView):
     model = Content
     template_name = 'html/history_form.html'
     form_class = RestaurantHistoryForm
+    permission_required = 'restaurant.change_content'
+    login_url = reverse_lazy("users:login")
 
-    def get_success_url(self):
-        return reverse_lazy('restaurant:home_page')
-
-
-class HistoryUpdateView(LoginRequiredMixin, UpdateView):
-    model = Content
-    template_name = 'html/history_form.html'
-    form_class = RestaurantHistoryForm
     def get_success_url(self):
         return reverse_lazy('restaurant:about_page')
 
 
-class HistoryDeleteView(LoginRequiredMixin, DeleteView):
+class HistoryDeleteView(PermissionRequiredMixin, DeleteView):
     model = Content
     template_name = 'html/history_delete.html'
     context_object_name = 'history'
+    permission_required = 'restaurant.delete_content'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy('restaurant:about_page')
 
-class MissionCreateView(LoginRequiredMixin, CreateView):
+
+class MissionCreateView(PermissionRequiredMixin, CreateView):
     model = Content
     template_name = 'html/mission_form.html'
     form_class = RestaurantMissionForm
+    permission_required = 'restaurant.add_content'
+    login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy('restaurant:home_page')
 
 
-class MissionDeleteView(LoginRequiredMixin, DeleteView):
+class MissionDeleteView(PermissionRequiredMixin, DeleteView):
     model = Content
     template_name = 'html/mission_delete.html'
     context_object_name = 'mission'
+    permission_required = 'restaurant.delete_content'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy('restaurant:about_page')
 
 
-class MissionUpdateView(LoginRequiredMixin, UpdateView):
+class MissionUpdateView(PermissionRequiredMixin, UpdateView):
     model = Content
     template_name = 'html/mission_form.html'
     form_class = RestaurantMissionForm
+    permission_required = 'restaurant.change_content'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy('restaurant:about_page')
 
 
-class TeamCreateView(CreateView):
+class TeamCreateView(PermissionRequiredMixin, CreateView):
     model = Team
     template_name = 'html/team_form.html'
     form_class = TeamForm
+    permission_required = 'restaurant.add_team'
+    login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class TeamDeleteView(LoginRequiredMixin, DeleteView):
+class TeamDeleteView(PermissionRequiredMixin, DeleteView):
     model = Team
     template_name = 'html/team_delete.html'
     context_object_name = 'team'
+    permission_required = 'restaurant.delete_team'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class TeamUpdateView(LoginRequiredMixin, UpdateView):
+class TeamUpdateView(PermissionRequiredMixin, UpdateView):
     model = Team
     template_name = 'html/team_form.html'
     form_class = TeamForm
+    permission_required = 'restaurant.change_team'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class ChiefCreateView(CreateView):
+class ChiefCreateView(PermissionRequiredMixin, CreateView):
     model = Chief
     template_name = 'html/chief_form.html'
     form_class = ChiefForm
+    permission_required = 'restaurant.add_chief'
+    login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class ChiefDeleteView(LoginRequiredMixin, DeleteView):
+class ChiefDeleteView(PermissionRequiredMixin, DeleteView):
     model = Chief
     template_name = 'html/chief_delete.html'
     context_object_name = 'chief'
+    permission_required = 'restaurant.delete_chief'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class ChiefUpdateView(LoginRequiredMixin, UpdateView):
+class ChiefUpdateView(PermissionRequiredMixin, UpdateView):
     model = Chief
     template_name = 'html/chief_form.html'
     form_class = ChiefForm
+    permission_required = 'restaurant.change_chief'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class SousChefCreateView(CreateView):
+class SousChefCreateView(PermissionRequiredMixin, CreateView):
     model = SousChef
     template_name = 'html/sous_chef_form.html'
     form_class = SousChefForm
+    permission_required = 'restaurant.add_souschef'
+    login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class SousChefDeleteView(LoginRequiredMixin, DeleteView):
+class SousChefDeleteView(PermissionRequiredMixin, DeleteView):
     model = SousChef
     template_name = 'html/sous_chef_delete.html'
     context_object_name = 'sous_chef'
+    permission_required = 'restaurant.delete_souschef'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class SousChefUpdateView(LoginRequiredMixin, UpdateView):
+class SousChefUpdateView(PermissionRequiredMixin, UpdateView):
     model = SousChef
     form_class = SousChefForm
     template_name = 'html/sous_chef_form.html'
+    permission_required = 'restaurant.change_souschef'
+    login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:about_page")
 
 
-class ReservationPageCreateView(LoginRequiredMixin, CreateView):
+class ReservationPageCreateView(PermissionRequiredMixin, CreateView):
     model = Reservation
     form_class = ReservationForm
     template_name = 'html/reservation_page.html'
+    permission_required = 'restaurant.add_reservation'
     login_url = reverse_lazy("users:login")
     context_object_name = 'tables'
 
@@ -298,9 +365,10 @@ class ReservationPageCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ReservationListView(LoginRequiredMixin, ListView):
+class ReservationListView(PermissionRequiredMixin, ListView):
     model = Reservation
     template_name = 'html/reservation_list.html'
+    permission_required = 'restaurant.view_reservation'
     login_url = reverse_lazy("users:login")
     context_object_name = 'reservations'
 
@@ -329,16 +397,18 @@ class ReservationListView(LoginRequiredMixin, ListView):
         return context_data
 
 
-class ReservationDetailView(LoginRequiredMixin, DetailView):
+class ReservationDetailView(PermissionRequiredMixin, DetailView):
     model = Reservation
     template_name = 'html/reservation_detail.html'
+    permission_required = 'restaurant.view_reservation'
     login_url = reverse_lazy("users:login")
     context_object_name = 'reservation'
 
 
-class ReservationDeleteView(LoginRequiredMixin, DeleteView):
+class ReservationDeleteView(PermissionRequiredMixin, DeleteView):
     model = Reservation
     template_name = 'html/reservation_delete.html'
+    permission_required = 'restaurant.delete_reservation'
     login_url = reverse_lazy("users:login")
     context_object_name = 'reservation'
 
@@ -346,10 +416,11 @@ class ReservationDeleteView(LoginRequiredMixin, DeleteView):
         return reverse_lazy("users:profile", kwargs={'pk': self.request.user.pk})
 
 
-class ReservationUpdateView(LoginRequiredMixin, UpdateView):
+class ReservationUpdateView(PermissionRequiredMixin, UpdateView):
     model = Reservation
     form_class = ReservationForm
     template_name = 'html/reservation_update.html'
+    permission_required = 'restaurant.change_reservation'
     login_url = reverse_lazy("users:login")
     context_object_name = 'reservation'
 
@@ -357,37 +428,43 @@ class ReservationUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy("users:profile", kwargs={'pk': self.object.pk})
 
 
-class CarouselContentCreateView(LoginRequiredMixin, CreateView):
+class CarouselContentCreateView(PermissionRequiredMixin, CreateView):
     model = Content
     template_name = 'html/carousel_form.html'
     form_class = CarouselUploadForm
+    permission_required = 'restaurant.add_content'
     login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class CarouselContentUpdateView(LoginRequiredMixin, UpdateView):
+class CarouselContentUpdateView(PermissionRequiredMixin, UpdateView):
     model = Content
     form_class = CarouselUploadForm
     template_name = 'html/carousel_form.html'
+    permission_required = 'restaurant.change_content'
     login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class CarouselContentDeleteView(LoginRequiredMixin, DeleteView):
+class CarouselContentDeleteView(PermissionRequiredMixin, DeleteView):
     model = Content
     template_name = 'html/carousel_delete.html'
+    permission_required = 'restaurant.delete_content'
     login_url = reverse_lazy("users:login")
     context_object_name = 'slide'
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class CarouselContentListView(LoginRequiredMixin, ListView):
+class CarouselContentListView(PermissionRequiredMixin, ListView):
     model = Content
     template_name = 'html/carousel_list.html'
+    permission_required = 'restaurant.view_content'
     login_url = reverse_lazy("users:login")
     context_object_name = 'slides'
 
@@ -397,63 +474,74 @@ class CarouselContentListView(LoginRequiredMixin, ListView):
         return queryset
 
     def post(self, request, pk, *args, **kwargs):
+        if not request.user.has_perm('restaurant.change_content'):
+            return HttpResponseForbidden('У вас нет прав для изменения этого слайда')
+
         slide = get_object_or_404(Content, pk=pk)
-        if request.user.is_staff or request.user.is_superuser:
-            slide.is_active = not slide.is_active
-            slide.save()
-            return redirect('restaurant:carousel_list')
-        return HttpResponseForbidden('У вас нет прав для изменения этого слайда')
+        slide.is_active = not slide.is_active
+        slide.save()
+        return redirect('restaurant:carousel_list')
 
 
-class DescriptionCreateView(LoginRequiredMixin, CreateView):
+class DescriptionCreateView(PermissionRequiredMixin, CreateView):
     model = Content
     template_name = 'html/description_form.html'
     form_class = RestaurantDescriptionForm
+    permission_required = 'restaurant.add_content'
     login_url = reverse_lazy("users:login")
-    permission_classes = (IsAuthenticated, IsStaff,)
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class DescriptionUpdateView(LoginRequiredMixin, UpdateView):
+class DescriptionUpdateView(PermissionRequiredMixin, UpdateView):
     model = Content
     form_class = RestaurantDescriptionForm
+    template_name = 'html/description_form.html'
+    permission_required = 'restaurant.change_content'
     login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class DescriptionDeleteView(LoginRequiredMixin, DeleteView):
+class DescriptionDeleteView(PermissionRequiredMixin, DeleteView):
     model = Content
     template_name = 'html/description_form.html'
+    permission_required = 'restaurant.delete_content'
     login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class ContactsCreateView(LoginRequiredMixin, CreateView):
+class ContactsCreateView(PermissionRequiredMixin, CreateView):
     model = Contacts
     template_name = 'html/contact_form.html'
     form_class = ContactForm
+    permission_required = 'restaurant.add_contacts'
     login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class ContactsUpdateView(LoginRequiredMixin, UpdateView):
+class ContactsUpdateView(PermissionRequiredMixin, UpdateView):
     model = Contacts
     template_name = 'html/contact_form.html'
     form_class = ContactForm
+    permission_required = 'restaurant.change_contacts'
     login_url = reverse_lazy("users:login")
 
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")
 
 
-class ContactsDeleteView(LoginRequiredMixin, DeleteView):
+class ContactsDeleteView(PermissionRequiredMixin, DeleteView):
     model = Contacts
     template_name = 'html/contact_form.html'
+    permission_required = 'restaurant.delete_contacts'
     login_url = reverse_lazy("users:login")
+
     def get_success_url(self):
         return reverse_lazy("restaurant:home_page")

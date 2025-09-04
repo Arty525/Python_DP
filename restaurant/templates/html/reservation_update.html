@@ -101,7 +101,7 @@
     {% csrf_token %}
 
     <!-- Поле даты с календарем -->
-    <input type="date" class="form-control" id="date" name="date" placeholder="Дата" required>
+    <input type="date" class="form-control" id="date" name="date" placeholder="Дата" value="{{ reservation.date }}" required>
 
     <!-- Поле времени - группа кнопок -->
     <div class="mb-4">

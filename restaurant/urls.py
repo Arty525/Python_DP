@@ -4,13 +4,19 @@ from django.urls import path
 from config import settings
 from restaurant import views, services
 from restaurant.views import (HomePageCreateView, AboutPageTemplateView, ReservationPageCreateView, \
-    ReservationDetailView, ReservationUpdateView, ReservationListView, CarouselContentCreateView,
+                              ReservationDetailView, ReservationUpdateView, ReservationListView,
+                              CarouselContentCreateView,
                               DescriptionCreateView, ContactsCreateView, TeamCreateView, HistoryCreateView, \
-    MissionCreateView, ServiceCreateView, FeedbackListView, ChiefCreateView, SousChefCreateView, ServiceListView, \
-    ServiceDetailView, ServiceDeleteView, ServiceUpdateView, CarouselContentUpdateView, CarouselContentListView, \
-    CarouselContentDeleteView, DescriptionUpdateView, DescriptionDeleteView, HistoryUpdateView, HistoryDeleteView, \
-    MissionDeleteView, MissionUpdateView, ContactsUpdateView, ContactsDeleteView, TeamUpdateView, TeamDeleteView, \
-    ChiefUpdateView, ChiefDeleteView, SousChefUpdateView, SousChefDeleteView, FeedbackDetailView, FeedbackDeleteView)
+                              MissionCreateView, ServiceCreateView, FeedbackListView, ChiefCreateView,
+                              SousChefCreateView, ServiceListView, \
+                              ServiceDetailView, ServiceDeleteView, ServiceUpdateView, CarouselContentUpdateView,
+                              CarouselContentListView, \
+                              CarouselContentDeleteView, DescriptionUpdateView, DescriptionDeleteView,
+                              HistoryUpdateView, HistoryDeleteView, \
+                              MissionDeleteView, MissionUpdateView, ContactsUpdateView, ContactsDeleteView,
+                              TeamUpdateView, TeamDeleteView, \
+                              ChiefUpdateView, ChiefDeleteView, SousChefUpdateView, SousChefDeleteView,
+                              FeedbackDetailView, FeedbackDeleteView, FeedbackUpdateView)
 
 app_name = "restaurant"
 
@@ -69,5 +75,6 @@ urlpatterns = [
     path('feedback/list/', FeedbackListView.as_view(), name='feedback_list'),
     path('feedback/detail/<int:pk>', FeedbackDetailView.as_view(), name='feedback_detail'),
     path('feedback/delete/<int:pk>', FeedbackDeleteView.as_view(), name='feedback_delete'),
+    path('feedback/update/<int:pk>', FeedbackUpdateView.as_view(), name='feedback_update'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
