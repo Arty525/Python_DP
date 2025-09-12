@@ -1,0 +1,21 @@
+<!--<html/carousel_list.html>-->
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Управление слайдами{% endblock %}
+{% block content %}
+{% if slides %}
+{% for slide in slides %}
+<div class="card mb-3" style="margin-top: 15px; margin-bottom: 15px; background-color: #000;">
+    <img src="{{ slide.image.url }}" class="card-img-top" alt="{{ slide.title }}">
+    <div class="card-body" style="background-color: #fff;">
+        <h5 class="card-title">{{ slide.title }}</h5>
+        <p>Статус: {% if slide.is_active %}Активен{% else %}Не активен{% endif %}</p>
+        <a href="{% url 'restaurant:carousel_update' slide.pk %}" type="button" class="btn btn-outline-primary">Изменить</a>
+        <a href="{% url 'restaurant:carousel_delete' slide.pk %}" type="button" class="btn btn-outline-danger">Удалить</a>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+Нет слайдов
+{% endif %}
+{% endblock %}

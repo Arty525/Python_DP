@@ -1,0 +1,25 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Удаление истории ресторана{% endblock %}
+{% block content %}
+<div class="card" style=" max-width: 95%; background-color: transparent; border-color: #707070;">
+    <div class="card-header" style="border-color: #707070; color: #ffffff;">
+        <h4>{{ history.title }}</h4>
+    </div>
+    <img src="{{ history.image.url }}" class="card-img-top" alt="Антон Самсонов - основатель ресторана">
+    <div class="card-body" style="color: #a3a3a3" align="left">
+        <p class="card-text">{{ history.text }}</p>
+        <div class="alert alert-danger" role="alert">
+            Вы действительно хотите удалить историю ресторана?
+            <br>
+            <form method="post">
+                {% csrf_token%}
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-primary" type="submit">Удалить</button>
+                    <a href="{% url 'restaurant:about_page' %}" class="btn btn-outline-secondary" type="button">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

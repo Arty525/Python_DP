@@ -1,0 +1,245 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+{% block header %}
+<!--slider-->
+{% if slides %}
+<div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel" style="max-width:1000px">
+  <div class="carousel-inner">
+    {% for slide in slides %}
+    <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
+      {% if slide.image and slide.image.url %}
+      <img src="{{ slide.image.url }}" class="d-block w-100" alt="{{ slide.title }}">
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<p><a href="{% url 'restaurant:carousel_list' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+  </svg>
+  Изменить изображения
+</a>
+  <a href="{% url 'restaurant:carousel_create' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+    </svg>
+    Добавить изображения на слайдер
+  </a></p>
+
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if restaurant_description %}
+<!--restaurant description-->
+<h1>
+  {{ restaurant_description.title }}
+</h1>
+<hr>
+<div align="left">
+  {{ restaurant_description.text }}
+  {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+  <br>
+  <a href="{% url 'restaurant:description_update' restaurant_description.pk %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+      <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+      <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+    </svg>
+    Изменить описание ресторана
+  </a>
+  {% endif %}
+</div>
+{% else %}
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<br>
+<a href="{% url 'restaurant:description_create' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+  </svg>
+  Добавить описание ресторана
+</a>
+{% endif %}
+{% endif %}
+
+{% if services %}
+<!--services-->
+<div class="card" style="max-width: 100%; background-color: transparent; border-color: #707070; margin-top:15px; margin-bottom: 15px;">
+  <div class="card-header" style="border-color: #707070; color: #ffffff;">
+    <h4>Наши услуги</h4>
+  </div>
+  <div class="card-body" style="color: #a3a3a3" align="left">
+    <ul class="list-group list-group-flush">
+      {% for service in services %}
+      <li class="list-group-item" style="background-color: transparent; color: #a3a3a3"">
+      <h5>{{ service.title }}</h5>
+      {{ service.description }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+    <a href="{% url 'restaurant:service_list' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+      </svg>
+      Изменить список услуг
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<br>
+<a href="{% url 'restaurant:service_create' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+  </svg>
+  Добавить услуги
+</a>
+{% endif %}
+{% endif %}
+
+<!--contacts-->
+<h4>
+  Контакты
+</h4>
+<br>
+{% if contacts %}
+<div class="container">
+  <div class="row align-items-start">
+    <div class="col">
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-phone" viewBox="0 0 16 16">
+          <path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/>
+          <path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+        </svg>
+        {{ contacts.mobile_phone_number }}
+      </p>
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone" viewBox="0 0 16 16">
+          <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
+        </svg>
+        {{ contacts.phone_number }}
+      </p>
+    </div>
+    <div class="col">
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+          <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+        </svg>
+        {{ contacts.email }}
+      </p>
+      {% if contacts.vk %}
+      <p>
+        <a href="{{ contacts.vk }}" target="_blank" class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+          <img src="/media/img/vk_logo_blue.svg" alt="vk logo" height="20" class="svg-image">
+          {{ contacts.vk }}</a>
+      </p>
+      {% endif %}
+      {% if contacts.tg %}
+      <p>
+        <a href="{{ contacts.tg }}" target="_blank" class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+          <img src="/media/img/tg_logo.svg" alt="telegram logo" height="20" class="svg-image">
+          {{ contacts.tg }}</a>
+      </p>
+      {% endif %}
+    </div>
+    <div class="col">
+      <p>{{ contacts.city }}</p>
+      <p>{{ contacts.address }}</p>
+      {% if contacts.subway %}
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" height="20px" viewBox="337.5 232.3 125 85.9" xml:space="preserve">
+          <polygon fill="#FF0013" points="453.9,306.2 424.7,232.3 400,275.5 375.4,232.3 346.1,306.2 337.5,306.2 337.5,317.4 381.7,317.4   381.7,306.2 375.1,306.2 381.5,287.8 400,318.2 418.5,287.8 424.9,306.2 418.3,306.2 418.3,317.4 462.5,317.4 462.5,306.2 "/>
+        </svg>
+        {{ contacts.subway }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<a href="{% url 'restaurant:contacts_update' contacts.pk %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+  </svg>
+  Изменить контактные данные
+</a>
+{% endif %}
+{% else %}
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<br>
+<a href="{% url 'restaurant:contacts_create' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+  </svg>
+  Добавить контактные данные
+</a>
+{% endif %}
+{% endif %}
+
+<!--feedback form-->
+{% if not user.is_staff or user.is_superuser or not user.is_authenticated %}
+{% if form %}
+<div class="accordion accordion-flush" id="accordionFlushExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+        Открыть форму обратной связи
+      </button>
+    </h2>
+    <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+      <div class="accordion-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="container" style="margin-top: 15px; margin-bottom: 15px;">
+            <h4>Форма обратной связи</h4>
+            <div class="row align-items-start">
+              <div class="col">
+                {{ form.first_name.label }}
+                {{ form.first_name }}
+              </div>
+              <div class="col">
+                {{ form.last_name.label }}
+                {{ form.last_name }}
+              </div>
+            </div>
+            <div class="row align-items-start" style="margin-top: 15px">
+              <div class="col">
+                {{ form.email.label }}
+                {{ form.email }}
+              </div>
+              <div class="col">
+                {{ form.phone.label }}
+                {{ form.phone }}
+              </div>
+            </div>
+            <div class="row align-items-start" style="margin-top: 15px">
+              <div class="col">
+                {{ form.text.label }}
+                {{ form.text }}
+              </div>
+            </div>
+            <div class="row align-items-start" style="margin-top: 15px">
+              <div class="col">
+                {{ form.image.label }}
+                {{ form.image }}
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+{% block content %}
+
+{% if service.image %}
+<img src="{{ service.image.url }}" alt="{{ service.title }}" style="max-width: 350px;">
+{% else %}
+Нет изображения
+{% endif %}
+<hr>
+<div class="card-body">
+    <h5 class="card-title">{{ service.title }}</h5>
+    <p class="card-text">{{ service.description }}</p>
+    <p>Цена: {{ service.price }}</p>
+    <p>Статус: {% if service.is_active %}Услуга активна{% else %}Услуга не активна{% endif %}</p>
+
+    <form method="post" style="padding-top: 10px">
+        <a href="{% url 'restaurant:service_update' service.pk %}"  type="button" class="btn btn-outline-primary">Редактировать</a>
+        <a href="{% url 'restaurant:service_delete' service.pk %}" type="button" class="btn btn-outline-danger">Удалить</a>
+        {% csrf_token %}
+        {% if service.is_active %}
+        <button type="submit" class="btn btn-outline-warning">Отключить</button>
+        {% else %}
+        <button type="submit" class="btn btn-outline-success">Включить</button>
+        {% endif %}
+    </form>
+</div>
+
+{% endblock %}

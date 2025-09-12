@@ -1,0 +1,339 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.ru.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация datepicker
+        $('#{{ form.date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            language: 'ru',
+            todayHighlight: true,
+            autoclose: true,
+            startDate: new Date()
+        });
+
+        // Валидация формы
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Динамическое обновление информации о столе
+        const tableSelect = document.getElementById('id_table');
+        const tableInfo = document.createElement('div');
+        tableInfo.className = 'form-text mt-2';
+        tableInfo.id = 'table-info';
+        tableSelect.parentNode.appendChild(tableInfo);
+
+        function updateTableInfo() {
+            const selectedOption = tableSelect.options[tableSelect.selectedIndex];
+            const seats = selectedOption.getAttribute('data-seats');
+            const hall = selectedOption.getAttribute('data-hall');
+            if (seats && hall) {
+                tableInfo.innerHTML = `<i class="bi bi-info-circle"></i> Вместимость: ${seats} человек, Зал: ${hall}`;
+            } else {
+                tableInfo.innerHTML = '';
+            }
+        }
+
+        tableSelect.addEventListener('change', updateTableInfo);
+        updateTableInfo(); // initial update
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    .reservation-card {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border-radius: 1rem;
+        border: none;
+    }
+
+    .time-btn-group .btn {
+        min-width: 80px;
+        margin: 0.25rem;
+    }
+
+    .datepicker {
+        z-index: 1050 !important;
+    }
+
+    .form-floating>label {
+        padding: 1rem 0.75rem;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .error-list {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+{% block title %}Изменение бронирования{% endblock %}
+{% block content %}
+
+<!-- Отображение общих ошибок формы -->
+{% if form.non_field_errors %}
+<div class="alert alert-danger">
+    {% for error in form.non_field_errors %}
+    <p class="mb-0">{{ error }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+
+    <!-- Поле даты с календарем -->
+    <input type="date" class="form-control" id="date" name="date" placeholder="Дата" value="{{ reservation.date }}" required>
+
+    <!-- Поле времени - группа кнопок -->
+    <div class="mb-4">
+        <label class="form-label fw-bold required-field">
+            {{ form.start_time.label }}
+        </label>
+        <div class="btn-group flex-wrap" role="group">
+            {% for choice in form.start_time %}
+            <input type="radio" class="btn-check" name="start_time"
+                   id="{{ choice.id_for_label }}" value="{{ choice.data.value }}"
+                   autocomplete="off" {% if choice.data.selected %}checked{% endif %}>
+            <label class="btn btn-outline-light" for="{{ choice.id_for_label }}">
+                {{ choice.choice_label }}
+            </label>
+            {% endfor %}
+        </div>
+        {% if form.start_time.errors %}
+        <div class="error-list">
+            {% for error in form.start_time.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-text">Выберите время посещения</div>
+    </div>
+
+    <!-- Поле продолжительности - группа кнопок -->
+
+    <div class="mb-4">
+        <label class="form-label fw-bold required-field">
+            {{ form.duration.label }}
+        </label>
+        <div class="btn-group flex-wrap" role="group">
+            {% for choice in form.duration %}
+            <input type="radio" class="btn-check" name="duration"
+                   id="{{ choice.id_for_label }}" value="{{ choice.data.value }}"
+                   autocomplete="off" {% if choice.data.selected %}checked{% endif %}>
+            <label class="btn btn-outline-light" for="{{ choice.id_for_label }}">
+                {{ choice.choice_label }}
+            </label>
+            {% endfor %}
+        </div>
+        {% if form.duration.errors %}
+        <div class="error-list">
+            {% for error in form.duration.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-text">Выберите продолжительность бронирования</div>
+    </div>
+
+
+    <!-- Кнопка для обновления списка столов -->
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" onclick="loadTables()" id="loadTablesBtn">
+            <i class="bi bi-arrow-clockwise"></i> Загрузить доступные столы
+        </button>
+    </div>
+
+    <!-- Контейнер для выбора стола -->
+    <div class="mb-4">
+        <label for="id_table" class="form-label fw-bold required-field">
+            Стол
+        </label>
+        <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-table"></i>
+        </span>
+            <select class="form-select" name="table" id="id_table" required disabled>
+                <option value="">-- Нажмите кнопку для загрузки столов --</option>
+            </select>
+        </div>
+        <div id="table-info" class="form-text mt-2"></div>
+
+        {% if form.table.errors %}
+        <div class="error-list">
+            {% for error in form.table.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function loadTables() {
+            const date = document.getElementById('date').value;
+            const time = document.querySelector('input[name="start_time"]:checked')?.value;
+            const duration = document.querySelector('input[name="duration"]:checked')?.value;
+            const tableSelect = document.getElementById('id_table');
+            const loadBtn = document.getElementById('loadTablesBtn');
+            const tableInfo = document.getElementById('table-info');
+
+            // Проверяем заполнены ли необходимые поля
+            if (!date || !time || !duration) {
+                alert('Пожалуйста, сначала выберите дату, время и продолжительность');
+                return;
+            }
+
+            // Блокируем кнопку и показываем загрузку
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Загрузка...';
+            tableSelect.innerHTML = '<option value="">Загрузка столов...</option>';
+
+            // Отправляем запрос на сервер
+            fetch(`{% url 'restaurant:get_free_tables' %}?date=${date}&time=${time}&duration=${duration}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Ошибка сервера');
+                    return response.json();
+                })
+                .then(tables => {
+                    // Очищаем select
+                    tableSelect.innerHTML = '';
+
+                    if (tables.length === 0) {
+                        tableSelect.innerHTML = '<option value="">Нет доступных столов</option>';
+                        tableInfo.innerHTML = 'На выбранное время нет свободных столов';
+                        return;
+                    }
+
+                    // Добавляем option для каждого стола
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Выберите стол";
+                    tableSelect.appendChild(defaultOption);
+
+                    tables.forEach(table => {
+                        const option = document.createElement('option');
+                        option.value = table.id;
+                        option.textContent = `Стол №${table.number} (${table.seats} мест, ${table.hall})`;
+                        option.setAttribute('data-seats', table.seats);
+                        option.setAttribute('data-hall', table.hall);
+                        tableSelect.appendChild(option);
+                    });
+
+                    // Активируем select
+                    tableSelect.disabled = false;
+                    tableInfo.innerHTML = `Найдено ${tables.length} свободных столов`;
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    tableSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                    tableInfo.innerHTML = 'Произошла ошибка при загрузке столов';
+                })
+                .finally(() => {
+                    // Разблокируем кнопку
+                    loadBtn.disabled = false;
+                    loadBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Обновить список столов';
+                });
+        }
+
+        // Функция для обновления информации о выбранном столе
+        function updateTableInfo() {
+            const tableSelect = document.getElementById('id_table');
+            const tableInfo = document.getElementById('table-info');
+            const selectedOption = tableSelect.options[tableSelect.selectedIndex];
+
+            if (selectedOption.value) {
+                const seats = selectedOption.getAttribute('data-seats');
+                const hall = selectedOption.getAttribute('data-hall');
+                tableInfo.innerHTML = `Вместимость: ${seats} человек, Зал: ${hall}`;
+            } else {
+                tableInfo.innerHTML = '';
+            }
+        }
+
+        // Вешаем обработчик на изменение выбора стола
+        document.getElementById('id_table').addEventListener('change', updateTableInfo);
+
+        // Автоматическая активация кнопки при заполнении полей
+        document.getElementById('date').addEventListener('change', checkForm);
+        document.getElementById('duration').addEventListener('change', checkForm);
+        document.querySelectorAll('input[name="time"]').forEach(input => {
+            input.addEventListener('change', checkForm);
+        });
+
+        function checkForm() {
+            const date = document.getElementById('date').value;
+            const time = document.querySelector('input[name="time"]:checked')?.value;
+            const duration = document.getElementById('duration').value;
+            const loadBtn = document.getElementById('loadTablesBtn');
+
+            loadBtn.disabled = !(date && time && duration);
+        }
+    </script>
+
+    <!-- Поля guests и celebration в одну строку -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label for="{{ form.guests.id_for_label }}" class="form-label fw-bold required-field">
+                {{ form.guests.label }}
+            </label>
+            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-people"></i>
+                                    </span>
+                {{ form.guests }}
+            </div>
+            {% if form.guests.errors %}
+            <div class="error-list">
+                {% for error in form.guests.errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-bold">
+                {{ form.celebration.label }}
+            </label>
+            <div class="form-check form-switch mt-2">
+                {{ form.celebration }}
+                <label class="form-check-label" for="{{ form.celebration.id_for_label }}">
+                    Отметить как праздник
+                </label>
+            </div>
+            {% if form.celebration.errors %}
+            <div class="error-list">
+                {% for error in form.celebration.errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Кнопка отправки -->
+    <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-circle me-2"></i>
+            Забронировать стол
+        </button>
+    </div>
+</form>
+{% endblock %}

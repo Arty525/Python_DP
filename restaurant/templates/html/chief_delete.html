@@ -1,0 +1,43 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Удаление шефа{% endblock %}
+{% block content %}
+<div class="card mb-3" style="max-width: 95%; max-height: 400px; margin-top: 15px">
+    <div class="row g-0">
+        <div class="col-lg-3">
+            <img src="{{ chief.photo.url }}" style="max-height:400px;" class="img-fluid rounded-start" alt="{{ chief.name }}">
+        </div>
+        <div class="col-lg-9">
+            <div class="card-body">
+                <h4 class="card-title">Шеф {{ chief.name }}</h4>
+                <p class="card-text" align="left">{{ chief.description }}</p>
+                {% if chief.vk %}
+                <small class="text-body-secondary">
+                    <a href="{{ chief.vk }}" target="_blank" class="btn btn-outline-secondary">
+                        <img src="/media/img/vk_logo_blue.svg" alt="vk logo" height="25" class="svg-image">
+                        {{ chief.vk }}</a>
+                </small>
+                {% endif %}
+                {% if chief.tg %}
+                <small class="text-body-secondary">
+                    <a href="{{ chief.tg }}" target="_blank" class="btn btn-outline-secondary">
+                        <img src="/media/img/tg_logo.svg" alt="telegram logo" height="25" class="svg-image">
+                        {{ chief.tg }}</a>
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="alert alert-danger" role="alert">
+                    Вы действительно хотите удалить данные шефа?
+                    <br>
+                    <form method="post">
+                        {% csrf_token%}
+                        <div class="d-grid gap-2 d-md-block">
+                            <button class="btn btn-primary" type="submit">Удалить</button>
+                            <a href="{% url 'restaurant:about_page' %}" class="btn btn-outline-secondary" type="button">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+{% endblock %}

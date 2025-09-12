@@ -1,0 +1,24 @@
+<!--<html/carousel_delete.html>-->
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Удаление слайда{% endblock %}
+{% block content %}
+<div class="card mb-3" style="margin-top: 15px; margin-bottom: 15px; background-color: #000;">
+    <img src="{{ slide.image.url }}" class="card-img-top" alt="{{ slide.title }}">
+    <div class="card-body" style="background-color: #fff;">
+        <h5 class="card-title">{{ slide.title }}</h5>
+        <div class="alert alert-danger" role="alert">
+            Вы действительно хотите удалить эту услугу?
+            <br>
+            <form method="post">
+                {% csrf_token%}
+                <div class="d-grid gap-2 d-md-block">
+                    <button class="btn btn-primary" type="submit">Удалить</button>
+                    <a href="{% url 'restaurant:carousel_list' %}" class="btn btn-outline-secondary" type="button">Отмена</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
