@@ -1,0 +1,14 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Обратная связь{% endblock %}
+{% block content %}
+{% if feedback_list %}
+{% for feedback in feedback_list %}
+<p>{{ feedback }}</p>
+{{ feedback.text }}
+<hr>
+{% endfor %}
+{% else %}
+Нет обратной связи
+{% endif %}
+{% endblock %}

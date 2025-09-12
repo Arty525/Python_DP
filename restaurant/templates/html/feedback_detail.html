@@ -1,0 +1,19 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Обратная связь{% endblock %}
+{% block content %}
+<div class="card" align="left">
+    <div class="card-header">
+        <h4>{{ feedback.first_name }} {{ feedback.last_name }}</h4>
+        {{ feedback.get_status_display }}
+    </div>
+    <div class="card-body">
+        <p class="card-text">{{ feedback.text }}</p>
+        {% if feedback.image %}
+        <img src="{{ feedback.image.url }}" width="800">
+        <hr>
+        {% endif %}
+        <a href="{% url 'restaurant:feedback_update' feedback.pk %}" class="btn btn-primary">Изменить статус</a>
+    </div>
+</div>
+{% endblock %}

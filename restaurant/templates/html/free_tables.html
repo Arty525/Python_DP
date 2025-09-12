@@ -1,0 +1,9 @@
+<!--<html/free_tables.html>-->
+{% if tables %}
+Список столов
+{% for table in tables %}
+<p style="color: #fff;">{{ table }}<p>
+    {% endfor %}
+    {% else %}
+    Для просмотра доступных столов выберите время, дату и продолжительность посещения
+    {% endif %}

@@ -1,0 +1,14 @@
+{% extends 'html/base.html' %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+{% block content %}
+<div class="list-group">
+    {% if services %}
+{% for service in services %}
+<a href="{% url 'restaurant:service_detail' service.pk %}" class="list-group-item list-group-item-action">{{ service.title }}</a>
+{% endfor %}
+    {% else %}
+    Нет добавленных услуг
+    {% endif %}
+</div>
+{% endblock %}
